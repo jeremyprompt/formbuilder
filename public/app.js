@@ -22,15 +22,29 @@ class FormBuilder {
     async loadForms() {
         try {
             const response = await fetch('/api/forms');
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Non-JSON response:', text);
+                throw new Error('Server returned non-JSON response');
+            }
+
             const data = await response.json();
             
             if (data.success) {
                 this.forms = data.data;
                 this.renderForms();
+            } else {
+                this.showError(data.message || 'Failed to load forms');
             }
         } catch (error) {
             console.error('Error loading forms:', error);
-            this.showError('Failed to load forms');
+            this.showError('Failed to load forms: ' + error.message);
         }
     }
 
@@ -177,6 +191,17 @@ class FormBuilder {
                 body: JSON.stringify(this.currentForm)
             });
 
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                console.error('Non-JSON response:', text);
+                throw new Error('Server returned non-JSON response');
+            }
+
             const data = await response.json();
             
             if (data.success) {
@@ -184,10 +209,12 @@ class FormBuilder {
                 this.renderForms();
                 this.hideFormBuilder();
                 this.showSuccess('Form saved successfully!');
+            } else {
+                this.showError(data.message || 'Failed to save form');
             }
         } catch (error) {
             console.error('Error saving form:', error);
-            this.showError('Failed to save form');
+            this.showError('Failed to save form: ' + error.message);
         }
     }
 

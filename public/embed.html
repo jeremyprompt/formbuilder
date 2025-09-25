@@ -56,7 +56,7 @@
             }
 
             async loadForm() {
-                const response = await fetch(`/api/embed/${this.formId}`);
+                const response = await fetch(`/api/embed-form?formId=${this.formId}`);
                 const data = await response.json();
 
                 if (data.success) {

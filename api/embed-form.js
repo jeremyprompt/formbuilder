@@ -4,6 +4,7 @@ module.exports = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Content-Type', 'application/json');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
 
   // Handle preflight requests
@@ -20,7 +21,7 @@ module.exports = (req, res) => {
     return;
   }
 
-  const { formId } = req.query;
+  const formId = req.query.formId || req.query.id;
 
   if (!formId) {
     res.status(400).json({
