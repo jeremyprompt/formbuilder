@@ -1,19 +1,23 @@
 {
-  "functions": {
-    "api/forms.js": {
-      "runtime": "@vercel/node"
-    },
-    "api/embed-form.js": {
-      "runtime": "@vercel/node"
-    },
-    "api/test.js": {
-      "runtime": "@vercel/node"
-    }
-  },
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/(.*)",
-      "destination": "/public/$1"
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "public/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/$1"
     }
   ]
 }
