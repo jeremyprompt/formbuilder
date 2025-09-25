@@ -1,5 +1,5 @@
 // API endpoint to serve individual forms for embedding
-module.exports = (req, res) => {
+export default function handler(req, res) {
   // Set CORS headers for embedding
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
