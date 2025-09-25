@@ -1,9 +1,10 @@
-// Sample forms API endpoint
+// API endpoint to serve individual forms for embedding
 module.exports = (req, res) => {
-  // Set CORS headers
+  // Set CORS headers for embedding
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
 
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
@@ -11,7 +12,26 @@ module.exports = (req, res) => {
     return;
   }
 
-  // Sample forms data
+  if (req.method !== 'GET') {
+    res.status(405).json({
+      success: false,
+      message: 'Method not allowed'
+    });
+    return;
+  }
+
+  const { formId } = req.query;
+
+  if (!formId) {
+    res.status(400).json({
+      success: false,
+      message: 'Form ID is required'
+    });
+    return;
+  }
+
+  // Sample forms data (in a real app, this would come from a database)
+  // This should match the data in /api/forms.js
   const sampleForms = [
     {
       id: 1,
@@ -36,30 +56,18 @@ module.exports = (req, res) => {
     }
   ];
 
-  if (req.method === 'GET') {
-    res.status(200).json({
-      success: true,
-      data: sampleForms
-    });
-  } else if (req.method === 'POST') {
-    // Handle form creation
-    const newForm = {
-      id: sampleForms.length + 1,
-      ...req.body,
-      createdAt: new Date().toISOString()
-    };
-    
-    // Add to sample forms (in memory only for demo)
-    sampleForms.push(newForm);
-    
-    res.status(201).json({
-      success: true,
-      data: newForm
-    });
-  } else {
-    res.status(405).json({
+  const form = sampleForms.find(f => f.id == formId);
+
+  if (!form) {
+    res.status(404).json({
       success: false,
-      message: 'Method not allowed'
+      message: 'Form not found'
     });
+    return;
   }
+
+  res.status(200).json({
+    success: true,
+    data: form
+  });
 };

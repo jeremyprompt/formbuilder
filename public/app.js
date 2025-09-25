@@ -60,6 +60,9 @@ class FormBuilder {
                     <button class="btn btn-outline btn-small" onclick="formBuilder.previewForm(${form.id})">
                         Preview
                     </button>
+                    <button class="btn btn-success btn-small" onclick="formBuilder.generateEmbedCode(${form.id})">
+                        Embed
+                    </button>
                     <button class="btn btn-secondary btn-small" onclick="formBuilder.deleteForm(${form.id})">
                         Delete
                     </button>
@@ -257,6 +260,84 @@ class FormBuilder {
             this.forms = this.forms.filter(f => f.id !== formId);
             this.renderForms();
             this.showSuccess('Form deleted successfully!');
+        }
+    }
+
+    generateEmbedCode(formId) {
+        const form = this.forms.find(f => f.id === formId);
+        if (!form) return;
+
+        // Get the current domain (assuming this will be deployed)
+        const baseUrl = window.location.origin;
+        const embedUrl = `${baseUrl}/embed.html?formId=${formId}`;
+        
+        const embedCode = `<iframe 
+    src="${embedUrl}" 
+    width="100%" 
+    height="600" 
+    frameborder="0" 
+    style="border: none; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+</iframe>`;
+
+        // Create modal to show embed code
+        this.showEmbedModal(form, embedCode);
+    }
+
+    showEmbedModal(form, embedCode) {
+        // Create modal overlay
+        const modal = document.createElement('div');
+        modal.className = 'embed-modal-overlay';
+        modal.innerHTML = `
+            <div class="embed-modal">
+                <div class="embed-modal-header">
+                    <h3>Embed Code for "${form.title}"</h3>
+                    <button class="embed-modal-close">&times;</button>
+                </div>
+                <div class="embed-modal-body">
+                    <p>Copy the code below to embed this form on your website:</p>
+                    <div class="embed-code-container">
+                        <textarea readonly class="embed-code-textarea">${embedCode}</textarea>
+                        <button class="btn btn-primary copy-btn" onclick="formBuilder.copyEmbedCode()">Copy Code</button>
+                    </div>
+                    <div class="embed-preview">
+                        <h4>Preview:</h4>
+                        <div class="embed-preview-frame">
+                            ${embedCode}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        // Add event listeners
+        modal.querySelector('.embed-modal-close').addEventListener('click', () => {
+            document.body.removeChild(modal);
+        });
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                document.body.removeChild(modal);
+            }
+        });
+    }
+
+    copyEmbedCode() {
+        const textarea = document.querySelector('.embed-code-textarea');
+        textarea.select();
+        textarea.setSelectionRange(0, 99999); // For mobile devices
+        
+        try {
+            document.execCommand('copy');
+            this.showSuccess('Embed code copied to clipboard!');
+        } catch (err) {
+            // Fallback for modern browsers
+            navigator.clipboard.writeText(textarea.value).then(() => {
+                this.showSuccess('Embed code copied to clipboard!');
+            }).catch(() => {
+                this.showError('Failed to copy embed code');
+            });
         }
     }
 
