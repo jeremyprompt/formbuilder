@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Plus, Settings } from 'lucide-react';
 import FormBuilder from '@/components/FormBuilder';
@@ -37,11 +37,7 @@ function FormBuilderContent() {
   const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadForms();
-  }, [isConfigured, loadFormsFromPromptIO]);
-
-  const loadForms = async () => {
+  const loadForms = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -65,7 +61,11 @@ function FormBuilderContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isConfigured, loadFormsFromPromptIO]);
+
+  useEffect(() => {
+    loadForms();
+  }, [loadForms]);
 
   const handleCreateForm = () => {
     setCurrentForm({

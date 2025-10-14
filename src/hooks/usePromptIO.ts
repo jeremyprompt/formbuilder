@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 interface Form {
@@ -88,7 +88,7 @@ export function usePromptIO() {
     });
   };
 
-  const saveFormToPromptIO = async (form: Form) => {
+  const saveFormToPromptIO = useCallback(async (form: Form) => {
     if (!config.orgAuthToken || !config.apiBaseUrl) {
       throw new Error('Prompt.io not configured');
     }
@@ -114,9 +114,9 @@ export function usePromptIO() {
       console.error('Error saving form to Prompt.io:', error);
       throw error;
     }
-  };
+  }, [config.orgAuthToken, config.apiBaseUrl]);
 
-  const loadFormsFromPromptIO = async () => {
+  const loadFormsFromPromptIO = useCallback(async () => {
     if (!config.orgAuthToken || !config.apiBaseUrl) {
       throw new Error('Prompt.io not configured');
     }
@@ -151,9 +151,9 @@ export function usePromptIO() {
       console.error('Error loading forms from Prompt.io:', error);
       throw error;
     }
-  };
+  }, [config.orgAuthToken, config.apiBaseUrl]);
 
-  const submitToCallbackUrl = async (formData: Record<string, unknown>, formCallbackUrl?: string) => {
+  const submitToCallbackUrl = useCallback(async (formData: Record<string, unknown>, formCallbackUrl?: string) => {
     const targetCallbackUrl = formCallbackUrl || config.callbackUrl;
     
     if (!targetCallbackUrl) {
@@ -180,7 +180,7 @@ export function usePromptIO() {
       console.error('Error submitting to callback URL:', error);
       throw error;
     }
-  };
+  }, [config.callbackUrl]);
 
   return {
     config,
