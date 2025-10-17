@@ -29,13 +29,86 @@ interface FormField {
 function FormBuilderContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl');
-  const { isConfigured, loadFormsFromPromptIO, saveFormToPromptIO } = usePromptIO();
+  const { isConfigured, loadFormsFromPromptIO, saveFormToPromptIO, config } = usePromptIO();
   
   const [forms, setForms] = useState<Form[]>([]);
   const [currentForm, setCurrentForm] = useState<Form | null>(null);
   const [showFormBuilder, setShowFormBuilder] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isChecked, setIsChecked] = useState(false);
+
+  // Callback functionality
+  const domain = callbackUrl?.split("/")[2] ?? "N/A"; // Extract domain from URL
+  const cbToPostUrl = callbackUrl ? `${callbackUrl}&event=newFormCreationStarted` : null;
+
+  const sendCallback = useCallback(async (checked: boolean) => {
+    if (!callbackUrl || !cbToPostUrl) {
+      console.error("Callback URL is null or undefined");
+      return;
+    }
+
+    const requestBody = JSON.stringify({ 
+      event: "newFormCreationStarted", 
+      isChecked: checked,
+      timestamp: new Date().toISOString()
+    });
+
+    try {
+      const response = await fetch(cbToPostUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json"},
+        body: requestBody,
+      });
+      
+      if (response.ok) {
+        console.log("Callback sent successfully");
+      } else {
+        console.error("Failed to send callback:", response.statusText);
+      }
+    } catch (error) {
+      console.error("Error sending callback:", error);
+    }
+  }, [callbackUrl, cbToPostUrl]);
+
+  const saveFormToPromptIOSchema = useCallback(async (form: Form) => {
+    // Build the payload according to your requirements
+    const payload: Record<string, any> = {
+      formTitle: form.title,
+      formDescription: form.description
+    };
+
+    // Add each form field as a property
+    form.fields.forEach((field, index) => {
+      payload[`field_${index}`] = {
+        formFieldTitle: field.label,
+        fieldType: field.type,
+        required: field.required
+      };
+    });
+
+    try {
+      // Use environment variables for subdomain and apiKey
+      const response = await fetch('/api/save-to-schema', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Form saved to Prompt.io schema successfully:', result);
+      return result;
+    } catch (error) {
+      console.error('Error saving form to Prompt.io schema:', error);
+      throw error;
+    }
+  }, []);
 
   const loadForms = useCallback(async () => {
     try {
@@ -86,8 +159,15 @@ function FormBuilderContent() {
 
   const handleSaveForm = async (form: Form) => {
     try {
+      // Always try to save to Prompt.io schema endpoint (uses env variables)
+      try {
+        await saveFormToPromptIOSchema(form);
+      } catch (schemaError) {
+        console.warn('Failed to save to Prompt.io schema, continuing with other save methods:', schemaError);
+      }
+
       if (isConfigured) {
-        // Save to Prompt.io
+        // Also save to Prompt.io custom data (existing functionality)
         await saveFormToPromptIO(form);
       } else {
         // Fallback to local API
