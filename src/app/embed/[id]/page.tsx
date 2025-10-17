@@ -131,7 +131,7 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
             <textarea
               id={fieldId}
               name={field.id}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical text-gray-900"
               placeholder={field.label}
               required={field.required}
             />
@@ -215,7 +215,7 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
               type={field.type}
               id={fieldId}
               name={field.id}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
               placeholder={field.label}
               required={field.required}
             />
