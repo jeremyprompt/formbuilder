@@ -147,7 +147,7 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
             <select
               id={fieldId}
               name={field.id}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
               required={field.required}
             >
               <option value="">Select an option</option>

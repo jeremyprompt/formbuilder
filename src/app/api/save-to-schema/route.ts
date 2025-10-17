@@ -24,10 +24,22 @@ export async function POST(request: NextRequest) {
     const payload = await request.json();
     console.log('Received payload:', JSON.stringify(payload, null, 2));
 
+    // Validate payload structure
+    if (!payload.formTitle || !payload.formDescription) {
+      console.error('Invalid payload: missing formTitle or formDescription');
+      return NextResponse.json(
+        { error: 'Invalid payload: formTitle and formDescription are required' },
+        { status: 400 }
+      );
+    }
+
     const url = `https://${subdomain}.prompt.io/rest/1.0/data/schema/30`;
     console.log('Making request to:', url);
 
     // Make the request to Prompt.io schema endpoint
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -35,8 +47,11 @@ export async function POST(request: NextRequest) {
         'orgAuthToken': apiKey,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     console.log('Response status:', response.status);
 

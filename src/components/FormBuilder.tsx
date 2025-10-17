@@ -270,7 +270,7 @@ function FieldEditor({ field, fieldTypes, onUpdate, onRemove }: FieldEditorProps
           <select
             value={field.type}
             onChange={(e) => onUpdate({ type: e.target.value })}
-            className="px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
           >
             {fieldTypes.map((type) => (
               <option key={type.value} value={type.value}>
