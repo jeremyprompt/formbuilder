@@ -26,16 +26,10 @@ interface FormField {
   options?: string[];
 }
 
-interface SchemaField {
-  formFieldTitle: string;
-  fieldType: string;
-  required: boolean;
-}
-
 interface SchemaPayload {
   formTitle: string;
   formDescription: string;
-  [key: string]: string | SchemaField;
+  [key: string]: string;
 }
 
 function FormBuilderContent() {
@@ -58,11 +52,7 @@ function FormBuilderContent() {
 
     // Add each form field as a property
     form.fields.forEach((field, index) => {
-      payload[`field_${index}`] = {
-        formFieldTitle: field.label,
-        fieldType: field.type,
-        required: field.required
-      };
+      payload[`field_${index}`] = `${field.label} (${field.type}${field.required ? ', required' : ''})`;
     });
 
     try {
