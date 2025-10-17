@@ -37,7 +37,7 @@ export function usePromptIO() {
     callbackUrl: null
   });
 
-  const loadConfig = () => {
+  const loadConfig = useCallback(() => {
     // Extract subdomain from current URL
     const hostname = window.location.hostname;
     const parts = hostname.split('.');
@@ -67,11 +67,11 @@ export function usePromptIO() {
       apiBaseUrl,
       callbackUrl
     });
-  };
+  }, [searchParams]);
 
   useEffect(() => {
     loadConfig();
-  }, []);
+  }, [loadConfig]);
 
   const saveConfig = (subdomain: string, orgAuthToken: string) => {
     // Save to localStorage

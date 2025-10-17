@@ -65,7 +65,7 @@ export async function DELETE(
       success: true,
       message: 'Form deleted successfully'
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({
       success: false,
       message: 'Failed to delete form'

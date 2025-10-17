@@ -119,7 +119,6 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
 
   const renderField = (field: FormField) => {
     const fieldId = `field_${field.id}`;
-    const required = field.required ? 'required' : '';
     const requiredStar = field.required ? <span className="text-red-500">*</span> : null;
 
     switch (field.type) {

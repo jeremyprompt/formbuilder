@@ -49,7 +49,7 @@ export async function GET() {
       success: true,
       data: sampleForms
     });
-  } catch (error) {
+  } catch {
     return NextResponse.json({
       success: false,
       message: 'Failed to load forms'
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
       success: true,
       data: newForm
     }, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({
       success: false,
       message: 'Failed to save form'
