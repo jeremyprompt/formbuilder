@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server';
 export async function GET() {
   try {
     // Get environment variables
-    const subdomain = process.env.PROMPTIO_SUBDOMAIN;
-    const apiKey = process.env.PROMPTIO_API_KEY;
+    const subdomain = process.env.subdomain;
+    const apiKey = process.env.apiKey;
 
     return NextResponse.json({
       success: true,

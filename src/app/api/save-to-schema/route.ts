@@ -3,8 +3,8 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     // Get environment variables
-    const subdomain = process.env.PROMPTIO_SUBDOMAIN;
-    const apiKey = process.env.PROMPTIO_API_KEY;
+    const subdomain = process.env.subdomain;
+    const apiKey = process.env.apiKey;
 
     console.log('Environment check:', { 
       hasSubdomain: !!subdomain, 
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     if (!subdomain || !apiKey) {
       console.error('Missing environment variables:', { subdomain: !!subdomain, apiKey: !!apiKey });
       return NextResponse.json(
-        { error: 'Missing environment variables: PROMPTIO_SUBDOMAIN or PROMPTIO_API_KEY' },
+        { error: 'Missing environment variables: subdomain or apiKey' },
         { status: 500 }
       );
     }
