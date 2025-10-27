@@ -121,25 +121,24 @@ function FormBuilderContent() {
 
   const handleSaveForm = async (form: Form) => {
     try {
-      if (!isConfigured) {
-        alert('Please configure Prompt.io settings first before saving forms.');
-        return;
-      }
-
       // Save to Prompt.io schema endpoint (uses env variables)
       try {
         await saveFormToPromptIOSchema(form);
       } catch (schemaError) {
         console.warn('Failed to save to Prompt.io schema:', schemaError);
-        throw new Error('Failed to save form to Prompt.io schema. Please check your configuration.');
+        const errorMessage = schemaError instanceof Error ? schemaError.message : 'Unknown error';
+        alert(`Failed to save form: ${errorMessage}`);
+        throw schemaError;
       }
 
-      // Also save to Prompt.io custom data
-      try {
-        await saveFormToPromptIO(form);
-      } catch (customDataError) {
-        console.warn('Failed to save to Prompt.io custom data:', customDataError);
-        // Schema save was successful, so we can continue
+      // Also save to Prompt.io custom data (if configured)
+      if (isConfigured) {
+        try {
+          await saveFormToPromptIO(form);
+        } catch (customDataError) {
+          console.warn('Failed to save to Prompt.io custom data:', customDataError);
+          // Schema save was successful, so we can continue
+        }
       }
       
       await loadForms(); // Reload forms
