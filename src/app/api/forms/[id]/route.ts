@@ -1,3 +1,5 @@
+// TEMPORARILY COMMENTED OUT - Now using Prompt.io for all data storage
+/*
 import { NextRequest, NextResponse } from 'next/server';
 
 interface Form {
@@ -72,3 +74,4 @@ export async function DELETE(
     }, { status: 500 });
   }
 }
+*/

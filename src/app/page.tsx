@@ -87,18 +87,12 @@ function FormBuilderContent() {
         const promptIOForms = await loadFormsFromPromptIO();
         setForms(promptIOForms);
       } else {
-        // Fallback to local API
-        const response = await fetch('/api/forms');
-        const data = await response.json();
-        
-        if (data.success) {
-          setForms(data.data);
-        } else {
-          console.error('Failed to load forms:', data.message);
-        }
+        // No fallback - just show empty state
+        setForms([]);
       }
     } catch (error) {
       console.error('Error loading forms:', error);
+      setForms([]);
     } finally {
       setLoading(false);
     }
@@ -127,31 +121,25 @@ function FormBuilderContent() {
 
   const handleSaveForm = async (form: Form) => {
     try {
-      // Always try to save to Prompt.io schema endpoint (uses env variables)
+      if (!isConfigured) {
+        alert('Please configure Prompt.io settings first before saving forms.');
+        return;
+      }
+
+      // Save to Prompt.io schema endpoint (uses env variables)
       try {
         await saveFormToPromptIOSchema(form);
       } catch (schemaError) {
-        console.warn('Failed to save to Prompt.io schema, continuing with other save methods:', schemaError);
+        console.warn('Failed to save to Prompt.io schema:', schemaError);
+        throw new Error('Failed to save form to Prompt.io schema. Please check your configuration.');
       }
 
-      if (isConfigured) {
-        // Also save to Prompt.io custom data (existing functionality)
+      // Also save to Prompt.io custom data
+      try {
         await saveFormToPromptIO(form);
-      } else {
-        // Fallback to local API
-        const response = await fetch('/api/forms', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(form),
-        });
-
-        const data = await response.json();
-        
-        if (!data.success) {
-          throw new Error(data.message);
-        }
+      } catch (customDataError) {
+        console.warn('Failed to save to Prompt.io custom data:', customDataError);
+        // Schema save was successful, so we can continue
       }
       
       await loadForms(); // Reload forms
@@ -159,6 +147,7 @@ function FormBuilderContent() {
       setCurrentForm(null);
     } catch (error) {
       console.error('Error saving form:', error);
+      alert('Failed to save form. Please try again.');
     }
   };
 
@@ -167,20 +156,13 @@ function FormBuilderContent() {
       return;
     }
 
+    // TODO: Implement delete in Prompt.io
+    // For now, just reload to show current state
     try {
-      const response = await fetch(`/api/forms/${formId}`, {
-        method: 'DELETE',
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        await loadForms(); // Reload forms
-      } else {
-        console.error('Failed to delete form:', data.message);
-      }
+      alert('Delete functionality will be implemented with Prompt.io integration.');
+      await loadForms(); // Reload forms
     } catch (error) {
-      console.error('Error deleting form:', error);
+      console.error('Error reloading forms after delete:', error);
     }
   };
 
