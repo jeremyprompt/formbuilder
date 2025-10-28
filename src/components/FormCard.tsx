@@ -33,7 +33,7 @@ export default function FormCard({ form, onEdit, onPreview, onEmbed, onDelete }:
     <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
       <h3 className="text-xl font-semibold text-gray-900 mb-2">{form.title}</h3>
       <p className="text-gray-600 mb-2">{form.description}</p>
-      <p className="text-sm text-gray-700 mb-4 italic">You can now get information about DAV's powerful membership network and veteran resources sent straight to your phone.</p>
+      <p className="text-sm text-gray-700 mb-4 italic">You can now get information about DAV&apos;s powerful membership network and veteran resources sent straight to your phone.</p>
       
       <div className="text-sm text-gray-500 mb-4">
         {form.fields.length} field(s) • Created {new Date(form.createdAt).toLocaleDateString()}
