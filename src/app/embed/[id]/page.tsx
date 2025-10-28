@@ -252,13 +252,34 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
           <form onSubmit={handleSubmit} className="space-y-4">
             {form.fields.map(renderField)}
             
+            <div className="mb-4">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="text_messages"
+                  name="text_messages"
+                  value="yes"
+                  className="mr-2 text-blue-600 focus:ring-blue-500"
+                />
+                <label htmlFor="text_messages" className="text-sm font-medium text-gray-700">
+                  Yes! I want to receive text messages
+                </label>
+              </div>
+            </div>
+            
             <button
               type="submit"
               disabled={submitting}
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 px-4 rounded-lg font-medium transition-colors"
             >
-              {submitting ? 'Submitting...' : 'Submit'}
+              {submitting ? 'Submitting...' : 'Sign Up'}
             </button>
+            
+            <div className="text-xs text-gray-500 mt-2 space-y-1">
+              <div>Message and data rates may apply.</div>
+              <div>Recurring messages subscription.</div>
+              <div>Available in US and Canada.</div>
+            </div>
           </form>
 
           {message && (
