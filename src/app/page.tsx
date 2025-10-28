@@ -222,8 +222,8 @@ function FormBuilderContent() {
                 ${renderFieldInput(field)}
               </div>
             `).join('')}
-            <div style="margin-bottom: 15px;">
-              <label class="checkbox-label">
+            <div style="margin-bottom: 15px; padding-left: 0;">
+              <label class="checkbox-label" style="padding-left: 0; margin-left: 0;">
                 <input type="checkbox" id="text_messages" name="text_messages" value="yes">
                 Yes! I want to receive text messages
               </label>

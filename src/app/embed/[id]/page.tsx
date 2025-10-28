@@ -252,7 +252,7 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
           <form onSubmit={handleSubmit} className="space-y-4">
             {form.fields.map(renderField)}
             
-            <div className="mb-4">
+            <div className="mb-4 pl-0">
               <div className="flex items-center">
                 <input
                   type="checkbox"
