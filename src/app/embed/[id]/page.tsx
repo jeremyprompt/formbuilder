@@ -88,15 +88,30 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
         userAgent: navigator.userAgent
       };
 
-      // Use callback URL from URL params or form config
+      // Submit to Prompt.io form submission API
+      const response = await fetch('/api/submit-form', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(submission)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Submission failed');
+      }
+
+      // Also optionally call the callback URL if provided
       const targetCallbackUrl = callbackUrl || form.callbackUrl;
       
       if (targetCallbackUrl) {
-        await submitToCallbackUrl(submission, targetCallbackUrl);
-      } else {
-        // Simulate submission if no callback URL
-        await new Promise(resolve => setTimeout(resolve, 500));
-        console.log('Form submission (no callback URL configured):', submission);
+        try {
+          await submitToCallbackUrl(submission, targetCallbackUrl);
+        } catch (callbackError) {
+          console.error('Callback URL error (non-fatal):', callbackError);
+        }
       }
 
       setMessage({ type: 'success', text: 'Thank you! Your form has been submitted successfully.' });
