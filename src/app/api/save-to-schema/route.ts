@@ -20,12 +20,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the payload from the request body
-    const payload = await request.json();
-    console.log('Received payload:', JSON.stringify(payload, null, 2));
+    // Get the new form payload from the request body
+    const newForm = await request.json();
+    console.log('Received new form:', JSON.stringify(newForm, null, 2));
 
     // Validate payload structure
-    if (!payload.formTitle || !payload.formDescription) {
+    if (!newForm.formTitle || !newForm.formDescription) {
       console.error('Invalid payload: missing formTitle or formDescription');
       return NextResponse.json(
         { error: 'Invalid payload: formTitle and formDescription are required' },
@@ -34,42 +34,86 @@ export async function POST(request: NextRequest) {
     }
 
     const url = `https://${subdomain}.prompt.io/rest/1.0/data/schema/30`;
-    console.log('Making request to:', url);
+    
+    // Step 1: Get existing forms array from Prompt.io
+    console.log('Fetching existing forms from:', url);
+    const getController = new AbortController();
+    const getTimeoutId = setTimeout(() => getController.abort(), 10000);
 
-    // Make the request to Prompt.io schema endpoint
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+    const getResponse = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'accept': '*/*',
+        'orgAuthToken': apiKey
+      },
+      signal: getController.signal
+    });
 
-    const response = await fetch(url, {
-      method: 'POST',
+    clearTimeout(getTimeoutId);
+
+    let existingForms = [];
+    
+    if (getResponse.ok) {
+      const existingData = await getResponse.json();
+      console.log('Existing data from Prompt.io:', existingData);
+      
+      // Parse existing forms
+      if (existingData.forms && typeof existingData.forms === 'string') {
+        try {
+          existingForms = JSON.parse(existingData.forms);
+        } catch (parseError) {
+          console.error('Error parsing existing forms:', parseError);
+          existingForms = [];
+        }
+      } else if (Array.isArray(existingData.forms)) {
+        existingForms = existingData.forms;
+      } else if (Array.isArray(existingData)) {
+        existingForms = existingData;
+      }
+    } else {
+      console.warn('Could not fetch existing forms, starting with empty array');
+    }
+
+    // Step 2: Add the new form to the array
+    existingForms.push(newForm);
+    console.log('Updated forms array (adding new form):', existingForms.length, 'total forms');
+
+    // Step 3: Put the updated array back to Prompt.io
+    console.log('Saving updated forms array to:', url);
+    const putController = new AbortController();
+    const putTimeoutId = setTimeout(() => putController.abort(), 10000);
+
+    const putResponse = await fetch(url, {
+      method: 'PUT',
       headers: {
         'accept': '*/*',
         'orgAuthToken': apiKey,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(payload),
-      signal: controller.signal
+      body: JSON.stringify(existingForms),
+      signal: putController.signal
     });
 
-    clearTimeout(timeoutId);
+    clearTimeout(putTimeoutId);
 
-    console.log('Response status:', response.status);
+    console.log('PUT response status:', putResponse.status);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Prompt.io API error:', response.status, errorText);
+    if (!putResponse.ok) {
+      const errorText = await putResponse.text();
+      console.error('Prompt.io PUT API error:', putResponse.status, errorText);
       return NextResponse.json(
-        { error: `Prompt.io API error: ${response.status} - ${errorText}` },
-        { status: response.status }
+        { error: `Prompt.io PUT API error: ${putResponse.status} - ${errorText}` },
+        { status: putResponse.status }
       );
     }
 
-    const result = await response.json();
+    const result = await putResponse.json();
     console.log('Success response:', result);
     
     return NextResponse.json({
       success: true,
-      data: result
+      data: result,
+      message: `Form added successfully. Total forms: ${existingForms.length}`
     });
 
   } catch (error) {
