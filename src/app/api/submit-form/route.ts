@@ -56,20 +56,75 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Extract phone number and name from form data
-    const phoneNumber = submission.data.phone || submission.data.phoneNumber || submission.data.mobile;
+    // Log all received data for debugging
+    console.log('Received submission data:', JSON.stringify(submission.data, null, 2));
+    
+    // Extract phone number and name from form data - try multiple patterns
+    let phoneNumber = submission.data.phone || submission.data.phoneNumber || submission.data.mobile || 
+                      submission.data.cellPhone || submission.data.cell;
+    
+    // If still not found, try to find any field with a name that looks like phone
+    if (!phoneNumber) {
+      for (const [key, value] of Object.entries(submission.data)) {
+        const strKey = key.toLowerCase();
+        // Check if field name contains phone-related keywords
+        if (strKey.includes('phone') || strKey.includes('mobile') || strKey.includes('cell')) {
+          phoneNumber = value as string;
+          console.log(`Found phone number in field "${key}": ${phoneNumber}`);
+          break;
+        }
+      }
+    }
+    
+    // Last resort: find any value that contains 10+ digits
+    if (!phoneNumber) {
+      for (const [key, value] of Object.entries(submission.data)) {
+        const strValue = String(value);
+        if (strValue.match(/\d{10,}/)) {
+          phoneNumber = value as string;
+          console.log(`Found phone number by pattern in field "${key}": ${phoneNumber}`);
+          break;
+        }
+      }
+    }
     
     if (!phoneNumber) {
+      console.error('No phone number found in submission data:', Object.keys(submission.data));
       return NextResponse.json(
-        { error: 'Phone number is required' },
+        { 
+          error: 'Phone number is required',
+          receivedFields: Object.keys(submission.data)
+        },
         { status: 400 }
       );
     }
 
     // Extract first and last name
-    const firstName = submission.data.firstName || submission.data.first_name || '';
-    const lastName = submission.data.lastName || submission.data.last_name || '';
+    let firstName = submission.data.firstName || submission.data.first_name || submission.data.fname || '';
+    let lastName = submission.data.lastName || submission.data.last_name || submission.data.lname || '';
+    
+    // If not found, try to find any name-like fields
+    if (!firstName && !lastName) {
+      for (const [key, value] of Object.entries(submission.data)) {
+        const strKey = key.toLowerCase();
+        if (strKey.includes('name') && value) {
+          const nameParts = String(value).split(' ');
+          if (nameParts.length >= 2) {
+            firstName = nameParts[0];
+            lastName = nameParts.slice(1).join(' ');
+            console.log(`Found name in field "${key}": ${firstName} ${lastName}`);
+          } else {
+            firstName = String(value);
+            console.log(`Found firstName in field "${key}": ${firstName}`);
+          }
+          break;
+        }
+      }
+    }
+    
     const fullName = `${firstName} ${lastName}`.trim() || phoneNumber; // Use phone if no name
+    
+    console.log(`Extracted: phoneNumber=${phoneNumber}, fullName=${fullName}`);
 
     // Step 1: Fetch all contact lists
     console.log('Fetching contact lists from Prompt.io...');
