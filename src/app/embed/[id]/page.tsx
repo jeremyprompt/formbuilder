@@ -116,8 +116,14 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
 
       setMessage({ type: 'success', text: 'Thank you! Your form has been submitted successfully.' });
       
-      // Reset form
-      e.currentTarget.reset();
+      // Reset form (only if it still exists)
+      if (e.currentTarget) {
+        try {
+          e.currentTarget.reset();
+        } catch (resetError) {
+          console.log('Form already cleared or removed from DOM');
+        }
+      }
 
       // Hide success message after 5 seconds
       setTimeout(() => {

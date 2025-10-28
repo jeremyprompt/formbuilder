@@ -207,9 +207,22 @@ export async function POST(request: NextRequest) {
       }
 
       const newListData = await createListResponse.json();
-      console.log('Contact list created successfully:', newListData);
+      console.log('Contact list created successfully - raw response:', JSON.stringify(newListData, null, 2));
       
-      matchingList = newListData;
+      // Handle different possible response structures
+      if (newListData.contactList) {
+        matchingList = newListData.contactList;
+      } else if (newListData.id) {
+        matchingList = newListData as PromptIOContactList;
+      } else {
+        console.error('Unexpected response structure when creating list:', newListData);
+        return NextResponse.json(
+          { error: 'Unable to determine created list ID' },
+          { status: 500 }
+        );
+      }
+      
+      console.log('Parsed matching list:', matchingList);
     }
 
     // Type guard: matchingList should always be defined at this point
@@ -224,51 +237,52 @@ export async function POST(request: NextRequest) {
     console.log(`Using list: "${matchingList.name}" (ID: ${matchingList.id})`);
 
     // Step 3: Add contact to the matching list
-    const addContactUrl = `https://${subdomain}.prompt.io/rest/1.0/contact_lists/${matchingList.id}/contacts`;
-    
-    const contactPayload: AddContactPayload = {
-      identityType: 'SMS',
-      contacts: [
-        {
-          identityKey: phoneNumber,
-          displayName: fullName
-        }
-      ]
-    };
+    let contactAdded = false;
+    try {
+      const addContactUrl = `https://${subdomain}.prompt.io/rest/1.0/contact_lists/${matchingList.id}/contacts`;
+      
+      const contactPayload: AddContactPayload = {
+        identityType: 'SMS',
+        contacts: [
+          {
+            identityKey: phoneNumber,
+            displayName: fullName
+          }
+        ]
+      };
 
-    console.log('Adding contact to list:', addContactUrl);
-    console.log('Contact payload:', contactPayload);
+      console.log('Adding contact to list:', addContactUrl);
+      console.log('Contact payload:', contactPayload);
 
-    const addContactController = new AbortController();
-    const addContactTimeoutId = setTimeout(() => addContactController.abort(), 10000);
+      const addContactController = new AbortController();
+      const addContactTimeoutId = setTimeout(() => addContactController.abort(), 10000);
 
-    const addContactResponse = await fetch(addContactUrl, {
-      method: 'POST',
-      headers: {
-        'accept': '*/*',
-        'orgAuthToken': apiKey,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(contactPayload),
-      signal: addContactController.signal
-    });
-
-    clearTimeout(addContactTimeoutId);
-
-    if (!addContactResponse.ok) {
-      const errorText = await addContactResponse.text();
-      console.error('Failed to add contact to list:', addContactResponse.status, errorText);
-      return NextResponse.json(
-        { 
-          error: 'Failed to add contact to Prompt.io list',
-          details: errorText
+      const addContactResponse = await fetch(addContactUrl, {
+        method: 'POST',
+        headers: {
+          'accept': '*/*',
+          'orgAuthToken': apiKey,
+          'Content-Type': 'application/json'
         },
-        { status: addContactResponse.status }
-      );
-    }
+        body: JSON.stringify(contactPayload),
+        signal: addContactController.signal
+      });
 
-    const addContactResult = await addContactResponse.json();
-    console.log('Contact added successfully:', addContactResult);
+      clearTimeout(addContactTimeoutId);
+
+      if (!addContactResponse.ok) {
+        const errorText = await addContactResponse.text();
+        console.error('Failed to add contact to list:', addContactResponse.status, errorText);
+        console.error('This is non-fatal - continuing with SMS if opted in...');
+      } else {
+        const addContactResult = await addContactResponse.json();
+        console.log('Contact added successfully:', addContactResult);
+        contactAdded = true;
+      }
+    } catch (addContactError) {
+      console.error('Error adding contact to list (non-fatal):', addContactError);
+      console.error('Continuing with SMS if opted in...');
+    }
 
     // Step 4: Send SMS if user opted in for text messages
     const wantsTextMessages = submission.data.text_messages === 'yes';
@@ -320,12 +334,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: 'Contact added to list successfully',
+      message: contactAdded ? 'Contact added to list and message sent successfully' : 'Message sent successfully (contact list update had issues)',
       data: {
         listId: matchingList.id,
         listName: matchingList.name,
         phoneNumber,
         displayName: fullName,
+        contactAdded,
         messageSent: wantsTextMessages,
         timestamp: new Date().toISOString()
       }
