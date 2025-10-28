@@ -58,7 +58,7 @@ function FormBuilderContent() {
     try {
       // Use environment variables for subdomain and apiKey
       const response = await fetch('/api/save-to-schema', {
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },

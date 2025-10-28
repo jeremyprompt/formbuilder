@@ -43,11 +43,11 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
   const loadForm = async (formId: string) => {
     try {
       setLoading(true);
-      const response = await fetch(`/api/forms`);
+      const response = await fetch(`/api/load-schema-forms`);
       const data = await response.json();
       
-      if (data.success) {
-        const foundForm = data.data.find((f: Form) => f.id === parseInt(formId));
+      if (data.success && data.forms) {
+        const foundForm = data.forms.find((f: Form) => f.id === parseInt(formId));
         if (foundForm) {
           setForm(foundForm);
         } else {

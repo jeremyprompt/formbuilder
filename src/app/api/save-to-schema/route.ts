@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+export async function PUT(request: NextRequest) {
   try {
     // Get environment variables
     const subdomain = process.env.subdomain;
@@ -90,7 +90,9 @@ export async function POST(request: NextRequest) {
         'orgAuthToken': apiKey,
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(existingForms),
+      body: JSON.stringify({
+        forms: JSON.stringify(existingForms)
+      }),
       signal: putController.signal
     });
 
