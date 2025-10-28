@@ -35,7 +35,7 @@ interface SchemaPayload {
 function FormBuilderContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl');
-  const { isConfigured, loadFormsFromPromptIO, saveFormToPromptIO } = usePromptIO();
+  const { isConfigured, saveFormToPromptIO } = usePromptIO();
   
   const [forms, setForms] = useState<Form[]>([]);
   const [currentForm, setCurrentForm] = useState<Form | null>(null);

@@ -202,7 +202,7 @@ export async function DELETE(request: NextRequest) {
 
     // Step 2: Remove the form matching the formTitle
     const initialLength = existingForms.length;
-    existingForms = existingForms.filter((form: any) => form.formTitle !== formTitle);
+    existingForms = existingForms.filter((form: Record<string, unknown>) => form.formTitle !== formTitle);
     const removedCount = initialLength - existingForms.length;
     
     console.log('DELETE: Updated forms array (removing form):', existingForms.length, 'total forms remaining');
