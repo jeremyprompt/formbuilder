@@ -82,12 +82,26 @@ function FormBuilderContent() {
     try {
       setLoading(true);
       
-      if (isConfigured) {
-        // Load from Prompt.io
-        const promptIOForms = await loadFormsFromPromptIO();
-        setForms(promptIOForms);
+      // Load forms from schema endpoint (uses Vercel env vars)
+      const response = await fetch('/api/load-schema-forms', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        console.error('Failed to load forms from schema:', response.status);
+        setForms([]);
+        return;
+      }
+
+      const result = await response.json();
+      
+      if (result.success && result.forms) {
+        setForms(result.forms);
       } else {
-        // No fallback - just show empty state
+        console.warn('No forms returned from schema');
         setForms([]);
       }
     } catch (error) {
@@ -96,7 +110,7 @@ function FormBuilderContent() {
     } finally {
       setLoading(false);
     }
-  }, [isConfigured, loadFormsFromPromptIO]);
+  }, []);
 
   useEffect(() => {
     loadForms();
