@@ -197,7 +197,7 @@ function FormBuilderContent() {
   };
 
   const handlePreviewForm = (form: Form) => {
-    const preview = window.open('', '_blank', 'width=600,height=400');
+    const preview = window.open('', '_blank', 'width=600,height=500');
     preview?.document.write(`
       <html>
         <head>
@@ -208,6 +208,8 @@ function FormBuilderContent() {
             label { display: block; margin-bottom: 5px; font-weight: bold; }
             input, textarea, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
             .required { color: red; }
+            .checkbox-label { display: flex; align-items: center; gap: 8px; font-weight: normal; }
+            .disclaimer { font-size: 11px; color: #666; margin-top: 10px; line-height: 1.4; }
           </style>
         </head>
         <body>
@@ -220,7 +222,18 @@ function FormBuilderContent() {
                 ${renderFieldInput(field)}
               </div>
             `).join('')}
-            <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">Submit</button>
+            <div style="margin-bottom: 15px;">
+              <label class="checkbox-label">
+                <input type="checkbox" id="text_messages" name="text_messages" value="yes">
+                Yes! I want to receive text messages
+              </label>
+            </div>
+            <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; width: 100%;">Sign Up</button>
+            <div class="disclaimer">
+              <div>Message and data rates may apply.</div>
+              <div>Recurring messages subscription.</div>
+              <div>Available in US and Canada.</div>
+            </div>
           </form>
         </body>
       </html>
