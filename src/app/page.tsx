@@ -164,18 +164,35 @@ function FormBuilderContent() {
     }
   };
 
-  const handleDeleteForm = async (formId: number) => {
+  const handleDeleteForm = async (form: Form) => {
     if (!confirm('Are you sure you want to delete this form?')) {
       return;
     }
 
-    // TODO: Implement delete in Prompt.io
-    // For now, just reload to show current state
     try {
-      alert('Delete functionality will be implemented with Prompt.io integration.');
-      await loadForms(); // Reload forms
+      // Call DELETE endpoint with formTitle
+      const response = await fetch('/api/save-to-schema', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ formTitle: form.title })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Form deleted successfully:', result);
+      
+      // Reload forms after successful deletion
+      await loadForms();
     } catch (error) {
-      console.error('Error reloading forms after delete:', error);
+      console.error('Error deleting form:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to delete form: ${errorMessage}`);
     }
   };
 
@@ -311,7 +328,7 @@ function FormBuilderContent() {
                   onEdit={() => handleEditForm(form)}
                   onPreview={() => handlePreviewForm(form)}
                   onEmbed={() => handleGenerateEmbedCode(form)}
-                  onDelete={() => handleDeleteForm(form.id)}
+                  onDelete={() => handleDeleteForm(form)}
                 />
               ))}
             </div>
