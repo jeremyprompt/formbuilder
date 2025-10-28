@@ -74,9 +74,18 @@ export async function PUT(request: NextRequest) {
       console.warn('Could not fetch existing forms, starting with empty array');
     }
 
-    // Step 2: Add the new form to the array
-    existingForms.push(newForm);
-    console.log('Updated forms array (adding new form):', existingForms.length, 'total forms');
+    // Step 2: Check if form with this title already exists, update or add
+    const existingIndex = existingForms.findIndex((form: Record<string, unknown>) => form.formTitle === newForm.formTitle);
+    
+    if (existingIndex >= 0) {
+      // Update existing form
+      existingForms[existingIndex] = newForm;
+      console.log('Updated existing form:', existingForms.length, 'total forms');
+    } else {
+      // Add new form
+      existingForms.push(newForm);
+      console.log('Added new form:', existingForms.length, 'total forms');
+    }
 
     // Step 3: Put the updated array back to Prompt.io
     console.log('Saving updated forms array to:', url);
@@ -112,10 +121,13 @@ export async function PUT(request: NextRequest) {
     const result = await putResponse.json();
     console.log('Success response:', result);
     
+    const wasUpdate = existingIndex >= 0;
     return NextResponse.json({
       success: true,
       data: result,
-      message: `Form added successfully. Total forms: ${existingForms.length}`
+      message: wasUpdate 
+        ? `Form updated successfully. Total forms: ${existingForms.length}`
+        : `Form added successfully. Total forms: ${existingForms.length}`
     });
 
   } catch (error) {
