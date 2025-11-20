@@ -8,6 +8,22 @@ interface FormSubmission {
   userAgent?: string;
 }
 
+interface SchemaForm {
+  field_0?: string;
+  field_1?: string;
+  field_2?: string;
+  field_3?: string;
+  field_4?: string;
+  field_5?: string;
+  field_6?: string;
+  field_7?: string;
+  field_8?: string;
+  field_9?: string;
+  formTitle: string;
+  formDescription: string;
+  [key: string]: string | undefined;
+}
+
 interface PromptIOContactList {
   id: number;
   name: string;
@@ -60,7 +76,7 @@ export async function POST(request: NextRequest) {
     console.log('Received submission data:', JSON.stringify(submission.data, null, 2));
     
     // Step 0: Load form structure to map field IDs to labels
-    let fieldLabelMap: Record<string, string> = {};
+    const fieldLabelMap: Record<string, string> = {};
     try {
       const schemaUrl = `https://${subdomain}.prompt.io/rest/1.0/data/schema/6`;
       const schemaController = new AbortController();
@@ -79,7 +95,7 @@ export async function POST(request: NextRequest) {
       
       if (schemaResponse.ok) {
         const schemaData = await schemaResponse.json();
-        let forms: any[] = [];
+        let forms: SchemaForm[] = [];
         
         if (schemaData.forms && typeof schemaData.forms === 'string') {
           forms = JSON.parse(schemaData.forms);
