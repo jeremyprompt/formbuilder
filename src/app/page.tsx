@@ -44,15 +44,23 @@ function FormBuilderContent() {
   const [loading, setLoading] = useState(true);
 
   const saveFormToPromptIOSchema = useCallback(async (form: Form) => {
+    // Automatic fields that should NOT be saved to schema (they're always added automatically)
+    const automaticFieldIds = ['first_name', 'last_name', 'phone_number'];
+    
     // Build the payload according to your requirements
     const payload: SchemaPayload = {
       formTitle: form.title || '',
       formDescription: form.description || ''
     };
 
-    // Add each form field as a property
-    form.fields.forEach((field, index) => {
-      payload[`field_${index}`] = `${field.label} (${field.type}${field.required ? ', required' : ''})`;
+    // Add each form field as a property, EXCLUDING automatic fields
+    let fieldIndex = 0;
+    form.fields.forEach((field) => {
+      // Skip automatic fields - they don't need to be saved
+      if (!automaticFieldIds.includes(field.id)) {
+        payload[`field_${fieldIndex}`] = `${field.label} (${field.type}${field.required ? ', required' : ''})`;
+        fieldIndex++;
+      }
     });
 
     console.log('Saving form payload:', payload);

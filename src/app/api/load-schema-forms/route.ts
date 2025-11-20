@@ -142,10 +142,22 @@ export async function GET() {
         { id: 'phone_number', type: 'text', label: 'Phone Number', required: true }
       ];
 
-      // Merge automatic fields with loaded fields, ensuring no duplicates
-      const automaticFieldIds = new Set(automaticFields.map(f => f.id));
-      const additionalFields = fields.filter(f => !automaticFieldIds.has(f.id));
-      const allFields = [...automaticFields, ...additionalFields];
+      // Check if automatic fields already exist in loaded fields (by label, not ID)
+      // since saved fields may have different IDs
+      const automaticLabels = new Set(automaticFields.map(f => f.label.toLowerCase()));
+      const hasAutomaticFields = fields.some(f => automaticLabels.has(f.label.toLowerCase()));
+      
+      // If automatic fields don't exist in loaded fields, add them
+      // Otherwise, use the existing fields (they might have been saved before we made them automatic)
+      let allFields: ParsedField[];
+      if (hasAutomaticFields) {
+        // Filter out automatic fields from loaded fields and add our standard ones
+        const additionalFields = fields.filter(f => !automaticLabels.has(f.label.toLowerCase()));
+        allFields = [...automaticFields, ...additionalFields];
+      } else {
+        // No automatic fields found, add them
+        allFields = [...automaticFields, ...fields];
+      }
 
       return {
         id: index + 1, // Generate ID
