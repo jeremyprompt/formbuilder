@@ -294,7 +294,7 @@ export async function POST(request: NextRequest) {
         const sendMessageUrl = `https://${subdomain}.prompt.io/rest/1.0/messages/send_to_customer`;
         const messagePayload = {
           message: "Thank you for signing up to receive DAV membership and veteran resource information via text. Msg & data rates may apply. Reply STOP to opt out.",
-          orgChannelApiId: "ps_1_216_2361535",
+          orgChannelApiId: "ps_1_859_2155511",
           customerChannelKey: phoneNumber,
           ignoreDeliveryRestrictions: true,
           isBroadcast: false
