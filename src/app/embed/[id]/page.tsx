@@ -80,6 +80,13 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
         data[key] = value.toString();
       });
 
+      console.log('=== CLIENT-SIDE FORM SUBMISSION ===');
+      console.log('Form ID:', form.id);
+      console.log('Form Title:', form.title);
+      console.log('Form fields:', form.fields);
+      console.log('Submission data:', data);
+      console.log('Data keys:', Object.keys(data));
+
       const submission = {
         formId: form.id,
         formTitle: form.title,
@@ -87,6 +94,8 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
         submittedAt: new Date().toISOString(),
         userAgent: navigator.userAgent
       };
+
+      console.log('Full submission payload:', JSON.stringify(submission, null, 2));
 
       // Submit to Prompt.io form submission API
       const response = await fetch('/api/submit-form', {

@@ -62,7 +62,12 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const submission: FormSubmission = await request.json();
-    console.log('Received form submission:', submission);
+    console.log('=== FORM SUBMISSION RECEIVED ===');
+    console.log('Full submission object:', JSON.stringify(submission, null, 2));
+    console.log('Form ID:', submission.formId);
+    console.log('Form Title:', submission.formTitle);
+    console.log('Submission data keys:', Object.keys(submission.data || {}));
+    console.log('Submission data values:', JSON.stringify(submission.data, null, 2));
 
     // Validate required fields
     if (!submission.formId || !submission.data) {
@@ -71,9 +76,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Log all received data for debugging
-    console.log('Received submission data:', JSON.stringify(submission.data, null, 2));
     
     // Step 0: Load form structure to map field IDs to labels
     const fieldLabelMap: Record<string, string> = {};
@@ -258,7 +260,12 @@ export async function POST(request: NextRequest) {
     
     const fullName = `${firstName} ${lastName}`.trim() || phoneNumber; // Use phone if no name
     
-    console.log(`Extracted: phoneNumber=${phoneNumber}, fullName=${fullName}`);
+    console.log('=== NAME EXTRACTION SUMMARY ===');
+    console.log(`Extracted firstName: "${firstName}"`);
+    console.log(`Extracted lastName: "${lastName}"`);
+    console.log(`Extracted phoneNumber: "${phoneNumber}"`);
+    console.log(`Constructed fullName: "${fullName}"`);
+    console.log('Field label map used:', JSON.stringify(fieldLabelMap, null, 2));
 
     // Step 1: Fetch all contact lists
     console.log('Fetching contact lists from Prompt.io...');
@@ -385,8 +392,11 @@ export async function POST(request: NextRequest) {
         ]
       };
 
-      console.log('Adding contact to list:', addContactUrl);
-      console.log('Contact payload:', contactPayload);
+      console.log('=== ADDING CONTACT TO LIST ===');
+      console.log('Contact list URL:', addContactUrl);
+      console.log('Contact payload:', JSON.stringify(contactPayload, null, 2));
+      console.log('displayName being sent:', contactPayload.contacts[0].displayName);
+      console.log('identityKey being sent:', contactPayload.contacts[0].identityKey);
 
       const addContactController = new AbortController();
       const addContactTimeoutId = setTimeout(() => addContactController.abort(), 10000);

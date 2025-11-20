@@ -46,14 +46,17 @@ function FormBuilderContent() {
   const saveFormToPromptIOSchema = useCallback(async (form: Form) => {
     // Build the payload according to your requirements
     const payload: SchemaPayload = {
-      formTitle: form.title,
-      formDescription: form.description
+      formTitle: form.title || '',
+      formDescription: form.description || ''
     };
 
     // Add each form field as a property
     form.fields.forEach((field, index) => {
       payload[`field_${index}`] = `${field.label} (${field.type}${field.required ? ', required' : ''})`;
     });
+
+    console.log('Saving form payload:', payload);
+    console.log('Form title:', form.title, 'Form description:', form.description);
 
     try {
       // Use environment variables for subdomain and apiKey
@@ -66,7 +69,33 @@ function FormBuilderContent() {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        // Try to read error details from response
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        
+        // Read response as text first, then try to parse as JSON
+        try {
+          const responseText = await response.text();
+          console.error('Error response text:', responseText);
+          
+          try {
+            const errorData = JSON.parse(responseText);
+            console.error('Error response from API:', errorData);
+            errorMessage = errorData.error || errorMessage;
+            if (errorData.details) {
+              errorMessage += ` - Details: ${JSON.stringify(errorData.details)}`;
+            }
+            if (errorData.received) {
+              errorMessage += ` - Received: ${JSON.stringify(errorData.received)}`;
+            }
+          } catch (parseError) {
+            // Not JSON, use the text directly
+            errorMessage += ` - ${responseText}`;
+          }
+        } catch (readError) {
+          console.error('Could not read error response:', readError);
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const result = await response.json();
