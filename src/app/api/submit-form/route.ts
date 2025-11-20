@@ -422,6 +422,98 @@ export async function POST(request: NextRequest) {
         const addContactResult = await addContactResponse.json();
         console.log('Contact added successfully:', addContactResult);
         contactAdded = true;
+
+        // Step 3.5: Get customer ID and update customer record with form fields
+        try {
+          console.log('=== FETCHING CUSTOMER ID ===');
+          
+          // Ensure phone number has + prefix and URL encode it
+          const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
+          const encodedPhone = encodeURIComponent(formattedPhone);
+          const getCustomerUrl = `https://${subdomain}.prompt.io/rest/1.0/customers/channel_types/SMS/channel_keys/${encodedPhone}`;
+          
+          console.log('Fetching customer ID from:', getCustomerUrl);
+          console.log('Phone number used:', formattedPhone);
+
+          const getCustomerController = new AbortController();
+          const getCustomerTimeoutId = setTimeout(() => getCustomerController.abort(), 10000);
+
+          const getCustomerResponse = await fetch(getCustomerUrl, {
+            method: 'GET',
+            headers: {
+              'accept': '*/*',
+              'orgAuthToken': apiKey
+            },
+            signal: getCustomerController.signal
+          });
+
+          clearTimeout(getCustomerTimeoutId);
+
+          if (getCustomerResponse.ok) {
+            const customerData = await getCustomerResponse.json();
+            console.log('Customer data received:', JSON.stringify(customerData, null, 2));
+            
+            const customerId = customerData.id;
+            if (customerId) {
+              console.log(`Customer ID: ${customerId}`);
+              
+              // Step 3.6: Update customer record with form fields
+              console.log('=== UPDATING CUSTOMER DATA ===');
+              
+              // Build the payload with form fields mapped to their labels
+              const customerDataPayload: Record<string, string> = {};
+              
+              // Add all form fields to the payload, using field labels as keys
+              for (const [fieldId, value] of Object.entries(submission.data)) {
+                if (!value) continue; // Skip empty values
+                
+                // Get the label for this field from the fieldLabelMap
+                const fieldLabel = fieldLabelMap[fieldId] || fieldId;
+                // Use the label as the key, and the value from submission
+                customerDataPayload[fieldLabel] = String(value);
+              }
+              
+              console.log('Customer data payload:', JSON.stringify(customerDataPayload, null, 2));
+              
+              const updateCustomerUrl = `https://${subdomain}.prompt.io/rest/1.0/data/customer/${customerId}`;
+              console.log('Updating customer at:', updateCustomerUrl);
+
+              const updateCustomerController = new AbortController();
+              const updateCustomerTimeoutId = setTimeout(() => updateCustomerController.abort(), 10000);
+
+              const updateCustomerResponse = await fetch(updateCustomerUrl, {
+                method: 'PUT',
+                headers: {
+                  'accept': '*/*',
+                  'orgAuthToken': apiKey,
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(customerDataPayload),
+                signal: updateCustomerController.signal
+              });
+
+              clearTimeout(updateCustomerTimeoutId);
+
+              if (updateCustomerResponse.ok) {
+                const updateResult = await updateCustomerResponse.json();
+                console.log('Customer data updated successfully:', JSON.stringify(updateResult, null, 2));
+              } else {
+                const errorText = await updateCustomerResponse.text();
+                console.error('Failed to update customer data:', updateCustomerResponse.status, errorText);
+                // Non-fatal - continue
+              }
+            } else {
+              console.error('No customer ID found in response');
+            }
+          } else {
+            const errorText = await getCustomerResponse.text();
+            console.error('Failed to get customer ID:', getCustomerResponse.status, errorText);
+            // Non-fatal - continue
+          }
+        } catch (customerError) {
+          console.error('Error fetching/updating customer data (non-fatal):', customerError);
+          // Non-fatal - continue with SMS if opted in
+        }
       }
     } catch (addContactError) {
       console.error('Error adding contact to list (non-fatal):', addContactError);
