@@ -135,11 +135,23 @@ export async function GET() {
         }
       });
 
+      // Automatic fields that are always included
+      const automaticFields = [
+        { id: 'first_name', type: 'text', label: 'First Name', required: true },
+        { id: 'last_name', type: 'text', label: 'Last Name', required: true },
+        { id: 'phone_number', type: 'text', label: 'Phone Number', required: true }
+      ];
+
+      // Merge automatic fields with loaded fields, ensuring no duplicates
+      const automaticFieldIds = new Set(automaticFields.map(f => f.id));
+      const additionalFields = fields.filter(f => !automaticFieldIds.has(f.id));
+      const allFields = [...automaticFields, ...additionalFields];
+
       return {
         id: index + 1, // Generate ID
         title: form.formTitle || 'Untitled Form',
         description: form.formDescription || '',
-        fields,
+        fields: allFields,
         createdAt: new Date().toISOString()
       };
     });

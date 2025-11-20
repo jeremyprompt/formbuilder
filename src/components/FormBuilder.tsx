@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Save, X, Plus, Trash2, Edit } from 'lucide-react';
 
 interface Form {
@@ -21,6 +21,18 @@ interface FormField {
   options?: string[];
 }
 
+// Automatic fields that are always present in every form
+const AUTOMATIC_FIELDS: FormField[] = [
+  { id: 'first_name', type: 'text', label: 'First Name', required: true },
+  { id: 'last_name', type: 'text', label: 'Last Name', required: true },
+  { id: 'phone_number', type: 'text', label: 'Phone Number', required: true }
+];
+
+// Check if a field is an automatic field
+const isAutomaticField = (fieldId: string): boolean => {
+  return AUTOMATIC_FIELDS.some(f => f.id === fieldId);
+};
+
 interface FormBuilderProps {
   form: Form;
   onSave: (form: Form) => void;
@@ -31,7 +43,18 @@ export default function FormBuilder({ form, onSave, onCancel }: FormBuilderProps
   const [title, setTitle] = useState(form.title);
   const [description, setDescription] = useState(form.description);
   const [callbackUrl, setCallbackUrl] = useState(form.callbackUrl || '');
-  const [fields, setFields] = useState<FormField[]>(form.fields);
+  
+  // Separate automatic fields from additional fields
+  const [additionalFields, setAdditionalFields] = useState<FormField[]>(() => {
+    // Filter out automatic fields from form.fields to get only additional fields
+    return form.fields.filter(field => !isAutomaticField(field.id));
+  });
+
+  // Ensure automatic fields are always present when form is initialized or saved
+  useEffect(() => {
+    // This ensures automatic fields are included when component mounts
+    // They'll be merged when saving
+  }, []);
 
   const fieldTypes = [
     { value: 'text', label: 'Text Input' },
@@ -51,17 +74,25 @@ export default function FormBuilder({ form, onSave, onCancel }: FormBuilderProps
       required: false,
       options: []
     };
-    setFields([...fields, newField]);
+    setAdditionalFields([...additionalFields, newField]);
   };
 
   const updateField = (fieldId: string, updates: Partial<FormField>) => {
-    setFields(fields.map(field => 
+    // Check if it's an automatic field (shouldn't happen, but safety check)
+    if (isAutomaticField(fieldId)) {
+      return; // Don't allow editing automatic fields
+    }
+    setAdditionalFields(additionalFields.map(field => 
       field.id === fieldId ? { ...field, ...updates } : field
     ));
   };
 
   const removeField = (fieldId: string) => {
-    setFields(fields.filter(field => field.id !== fieldId));
+    // Prevent removal of automatic fields
+    if (isAutomaticField(fieldId)) {
+      return;
+    }
+    setAdditionalFields(additionalFields.filter(field => field.id !== fieldId));
   };
 
   const handleSave = () => {
@@ -70,12 +101,15 @@ export default function FormBuilder({ form, onSave, onCancel }: FormBuilderProps
       return;
     }
 
+    // Merge automatic fields with additional fields
+    const allFields = [...AUTOMATIC_FIELDS, ...additionalFields];
+
     const updatedForm: Form = {
       ...form,
       title: title.trim(),
       description: description.trim(),
       callbackUrl: callbackUrl.trim(),
-      fields,
+      fields: allFields,
       updatedAt: new Date().toISOString()
     };
 
@@ -153,10 +187,34 @@ export default function FormBuilder({ form, onSave, onCancel }: FormBuilderProps
           </div>
         </div>
 
-        {/* Fields Section */}
+        {/* Automatic Fields Section */}
+        <div className="bg-blue-50 rounded-xl p-6 shadow-sm border border-blue-200 mb-6">
+          <h3 className="text-xl font-semibold text-gray-900 mb-4">Automatic Fields</h3>
+          <p className="text-sm text-gray-600 mb-4">
+            These fields are automatically included in every form and cannot be removed.
+          </p>
+          <div className="space-y-3">
+            {AUTOMATIC_FIELDS.map((field) => (
+              <div key={field.id} className="bg-white border border-blue-200 rounded-lg p-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="font-medium text-gray-900">{field.label}</span>
+                  <span className="text-sm text-gray-500">({fieldTypes.find(t => t.value === field.type)?.label})</span>
+                  <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">
+                    Required
+                  </span>
+                </div>
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                  Automatic
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Additional Fields Section */}
         <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-semibold text-gray-900">Form Fields</h3>
+            <h3 className="text-xl font-semibold text-gray-900">Additional Fields</h3>
             <button
               onClick={addField}
               className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
@@ -167,7 +225,7 @@ export default function FormBuilder({ form, onSave, onCancel }: FormBuilderProps
           </div>
 
           <div className="space-y-4">
-            {fields.map((field) => (
+            {additionalFields.map((field) => (
               <FieldEditor
                 key={field.id}
                 field={field}
@@ -177,9 +235,9 @@ export default function FormBuilder({ form, onSave, onCancel }: FormBuilderProps
               />
             ))}
 
-            {fields.length === 0 && (
+            {additionalFields.length === 0 && (
               <div className="text-center py-8 text-gray-500">
-                No fields added yet. Click &quot;Add Field&quot; to get started.
+                No additional fields added yet. Click &quot;Add Field&quot; to add custom fields.
               </div>
             )}
           </div>

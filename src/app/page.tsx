@@ -146,11 +146,18 @@ function FormBuilderContent() {
   }, [loadForms]);
 
   const handleCreateForm = () => {
+    // Automatic fields that are always included
+    const automaticFields = [
+      { id: 'first_name', type: 'text', label: 'First Name', required: true },
+      { id: 'last_name', type: 'text', label: 'Last Name', required: true },
+      { id: 'phone_number', type: 'text', label: 'Phone Number', required: true }
+    ];
+    
     setCurrentForm({
       id: 0,
       title: '',
       description: '',
-      fields: [],
+      fields: automaticFields, // Include automatic fields by default
       callbackUrl: callbackUrl || '',
       createdAt: new Date().toISOString()
     });

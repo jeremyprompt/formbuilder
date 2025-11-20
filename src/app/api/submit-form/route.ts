@@ -503,15 +503,38 @@ export async function POST(request: NextRequest) {
               // Step 3.6: Update customer record with form fields
               console.log('=== UPDATING CUSTOMER DATA ===');
               
+              // Automatic fields that should NOT be sent to customer data API
+              const automaticFieldIds = ['first_name', 'last_name', 'phone_number', 'firstName', 'lastName', 'phone', 'phoneNumber'];
+              
               // Build the payload with form fields mapped to their labels
+              // EXCLUDE automatic fields (First Name, Last Name, Phone Number)
               const customerDataPayload: Record<string, string> = {};
               
-              // Add all form fields to the payload, using field labels as keys
+              // Add only additional (non-automatic) form fields to the payload
               for (const [fieldId, value] of Object.entries(submission.data)) {
                 if (!value) continue; // Skip empty values
                 
+                // Skip automatic fields
+                const fieldIdLower = fieldId.toLowerCase();
+                if (automaticFieldIds.includes(fieldIdLower) || 
+                    fieldIdLower === 'firstname' || 
+                    fieldIdLower === 'lastname' || 
+                    fieldIdLower.includes('phone')) {
+                  console.log(`Skipping automatic field: ${fieldId}`);
+                  continue;
+                }
+                
                 // Get the label for this field from the fieldLabelMap
                 const fieldLabel = fieldLabelMap[fieldId] || fieldId;
+                // Check if label is an automatic field label
+                const labelLower = fieldLabel.toLowerCase();
+                if (labelLower.includes('first name') || 
+                    labelLower.includes('last name') || 
+                    labelLower.includes('phone')) {
+                  console.log(`Skipping automatic field by label: ${fieldLabel}`);
+                  continue;
+                }
+                
                 // Use the label as the key, and the value from submission
                 customerDataPayload[fieldLabel] = String(value);
               }
