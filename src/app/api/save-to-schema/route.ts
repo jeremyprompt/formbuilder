@@ -21,14 +21,51 @@ export async function PUT(request: NextRequest) {
     }
 
     // Get the new form payload from the request body
-    const newForm = await request.json();
-    console.log('Received new form:', JSON.stringify(newForm, null, 2));
-
-    // Validate payload structure
-    if (!newForm.formTitle || !newForm.formDescription) {
-      console.error('Invalid payload: missing formTitle or formDescription');
+    let newForm;
+    try {
+      newForm = await request.json();
+      console.log('Received new form:', JSON.stringify(newForm, null, 2));
+    } catch (parseError) {
+      console.error('Error parsing request body:', parseError);
       return NextResponse.json(
-        { error: 'Invalid payload: formTitle and formDescription are required' },
+        { error: 'Invalid JSON in request body' },
+        { status: 400 }
+      );
+    }
+    
+    if (!newForm || typeof newForm !== 'object') {
+      console.error('Invalid payload: not an object', newForm);
+      return NextResponse.json(
+        { error: 'Invalid payload: expected an object' },
+        { status: 400 }
+      );
+    }
+
+    // Validate payload structure - check for empty strings too
+    if (!newForm.formTitle || typeof newForm.formTitle !== 'string' || newForm.formTitle.trim() === '') {
+      console.error('Invalid payload: missing or empty formTitle', {
+        formTitle: newForm.formTitle,
+        type: typeof newForm.formTitle
+      });
+      return NextResponse.json(
+        { 
+          error: 'Invalid payload: formTitle is required and cannot be empty',
+          received: { formTitle: newForm.formTitle }
+        },
+        { status: 400 }
+      );
+    }
+    
+    if (!newForm.formDescription || typeof newForm.formDescription !== 'string' || newForm.formDescription.trim() === '') {
+      console.error('Invalid payload: missing or empty formDescription', {
+        formDescription: newForm.formDescription,
+        type: typeof newForm.formDescription
+      });
+      return NextResponse.json(
+        { 
+          error: 'Invalid payload: formDescription is required and cannot be empty',
+          received: { formDescription: newForm.formDescription }
+        },
         { status: 400 }
       );
     }
@@ -108,12 +145,28 @@ export async function PUT(request: NextRequest) {
     clearTimeout(putTimeoutId);
 
     console.log('PUT response status:', putResponse.status);
+    console.log('PUT request payload:', JSON.stringify({
+      forms: JSON.stringify(existingForms)
+    }, null, 2));
 
     if (!putResponse.ok) {
       const errorText = await putResponse.text();
-      console.error('Prompt.io PUT API error:', putResponse.status, errorText);
+      console.error('Prompt.io PUT API error:', {
+        status: putResponse.status,
+        statusText: putResponse.statusText,
+        error: errorText,
+        url: url,
+        formsCount: existingForms.length
+      });
       return NextResponse.json(
-        { error: `Prompt.io PUT API error: ${putResponse.status} - ${errorText}` },
+        { 
+          error: `Prompt.io PUT API error: ${putResponse.status} - ${errorText}`,
+          details: {
+            status: putResponse.status,
+            statusText: putResponse.statusText,
+            errorMessage: errorText
+          }
+        },
         { status: putResponse.status }
       );
     }
