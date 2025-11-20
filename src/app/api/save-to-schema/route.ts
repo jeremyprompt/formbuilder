@@ -33,7 +33,7 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const url = `https://${subdomain}.prompt.io/rest/1.0/data/schema/30`;
+    const url = `https://${subdomain}.prompt.io/rest/1.0/data/schema/6`;
     
     // Step 1: Get existing forms array from Prompt.io
     console.log('Fetching existing forms from:', url);
@@ -171,7 +171,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const url = `https://${subdomain}.prompt.io/rest/1.0/data/schema/30`;
+    const url = `https://${subdomain}.prompt.io/rest/1.0/data/schema/6`;
     
     // Step 1: Get existing forms array from Prompt.io
     console.log('DELETE: Fetching existing forms from:', url);

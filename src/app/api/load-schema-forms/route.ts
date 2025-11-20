@@ -45,7 +45,7 @@ export async function GET() {
       );
     }
 
-    const url = `https://${subdomain}.prompt.io/rest/1.0/data/schema/30`;
+    const url = `https://${subdomain}.prompt.io/rest/1.0/data/schema/6`;
     console.log('Fetching forms from:', url);
 
     // Make the request to Prompt.io schema endpoint
