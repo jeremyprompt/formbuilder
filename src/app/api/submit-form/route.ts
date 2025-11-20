@@ -59,11 +59,87 @@ export async function POST(request: NextRequest) {
     // Log all received data for debugging
     console.log('Received submission data:', JSON.stringify(submission.data, null, 2));
     
+    // Step 0: Load form structure to map field IDs to labels
+    let fieldLabelMap: Record<string, string> = {};
+    try {
+      const schemaUrl = `https://${subdomain}.prompt.io/rest/1.0/data/schema/6`;
+      const schemaController = new AbortController();
+      const schemaTimeoutId = setTimeout(() => schemaController.abort(), 10000);
+      
+      const schemaResponse = await fetch(schemaUrl, {
+        method: 'GET',
+        headers: {
+          'accept': '*/*',
+          'orgAuthToken': apiKey
+        },
+        signal: schemaController.signal
+      });
+      
+      clearTimeout(schemaTimeoutId);
+      
+      if (schemaResponse.ok) {
+        const schemaData = await schemaResponse.json();
+        let forms: any[] = [];
+        
+        if (schemaData.forms && typeof schemaData.forms === 'string') {
+          forms = JSON.parse(schemaData.forms);
+        } else if (Array.isArray(schemaData.forms)) {
+          forms = schemaData.forms;
+        } else if (Array.isArray(schemaData)) {
+          forms = schemaData;
+        }
+        
+        // Find the form matching the submission's formId
+        const form = forms[submission.formId - 1]; // formId is 1-indexed
+        
+        if (form) {
+          // Build field ID to label mapping
+          Object.keys(form).forEach((key) => {
+            if (key.startsWith('field_')) {
+              const fieldValue = form[key];
+              if (fieldValue && typeof fieldValue === 'string') {
+                // Parse field format: "Label (type, required)" or "Label (type)"
+                const match = fieldValue.match(/^(.+?)\s*\((.+?)\)\s*$/);
+                if (match) {
+                  const label = match[1].trim();
+                  fieldLabelMap[key] = label;
+                }
+              }
+            }
+          });
+          
+          console.log('Field label mapping:', fieldLabelMap);
+        }
+      }
+    } catch (schemaError) {
+      console.warn('Could not load form structure for field mapping:', schemaError);
+      // Continue without field mapping - will fall back to field ID matching
+    }
+    
     // Extract phone number and name from form data - try multiple patterns
     let phoneNumber = submission.data.phone || submission.data.phoneNumber || submission.data.mobile || 
                       submission.data.cellPhone || submission.data.cell;
     
-    // If still not found, try to find any field with a name that looks like phone
+    // If still not found, try to find by field labels (using fieldLabelMap)
+    if (!phoneNumber) {
+      for (const [fieldId, value] of Object.entries(submission.data)) {
+        if (!value) continue;
+        
+        const label = fieldLabelMap[fieldId] || '';
+        const labelLower = label.toLowerCase().trim();
+        const valueStr = String(value);
+        
+        // Check if label contains phone-related keywords
+        if (labelLower.includes('phone') || labelLower.includes('mobile') || 
+            labelLower.includes('cell') || labelLower.includes('telephone')) {
+          phoneNumber = valueStr;
+          console.log(`Found phone number in field "${fieldId}" (label: "${label}"): ${phoneNumber}`);
+          break;
+        }
+      }
+    }
+    
+    // If still not found, try to find any field with an ID that looks like phone
     if (!phoneNumber) {
       for (const [key, value] of Object.entries(submission.data)) {
         const strKey = key.toLowerCase();
@@ -103,7 +179,49 @@ export async function POST(request: NextRequest) {
     let firstName = submission.data.firstName || submission.data.first_name || submission.data.fname || '';
     let lastName = submission.data.lastName || submission.data.last_name || submission.data.lname || '';
     
-    // If not found, try to find any name-like fields
+    // If not found, try to find by field labels (using fieldLabelMap)
+    if (!firstName && !lastName) {
+      for (const [fieldId, value] of Object.entries(submission.data)) {
+        if (!value) continue;
+        
+        const label = fieldLabelMap[fieldId] || '';
+        const labelLower = label.toLowerCase().trim();
+        const valueStr = String(value).trim();
+        
+        // Check for "first name" or similar patterns
+        if (!firstName && (labelLower.includes('first name') || labelLower === 'firstname' || 
+            labelLower === 'fname' || labelLower.includes('first'))) {
+          firstName = valueStr;
+          console.log(`Found first name in field "${fieldId}" (label: "${label}"): ${firstName}`);
+          continue;
+        }
+        
+        // Check for "last name" or similar patterns
+        if (!lastName && (labelLower.includes('last name') || labelLower === 'lastname' || 
+            labelLower === 'lname' || labelLower.includes('last'))) {
+          lastName = valueStr;
+          console.log(`Found last name in field "${fieldId}" (label: "${label}"): ${lastName}`);
+          continue;
+        }
+        
+        // Check for general "name" field (might contain full name)
+        if ((!firstName || !lastName) && labelLower.includes('name') && 
+            !labelLower.includes('first') && !labelLower.includes('last')) {
+          const nameParts = valueStr.split(/\s+/).filter(p => p.length > 0);
+          if (nameParts.length >= 2) {
+            firstName = nameParts[0];
+            lastName = nameParts.slice(1).join(' ');
+            console.log(`Found full name in field "${fieldId}" (label: "${label}"): ${firstName} ${lastName}`);
+            break;
+          } else if (nameParts.length === 1 && !firstName) {
+            firstName = nameParts[0];
+            console.log(`Found name in field "${fieldId}" (label: "${label}"): ${firstName}`);
+          }
+        }
+      }
+    }
+    
+    // Fallback: try to find by field ID pattern (if fieldLabelMap didn't work)
     if (!firstName && !lastName) {
       for (const [key, value] of Object.entries(submission.data)) {
         const strKey = key.toLowerCase();
@@ -112,10 +230,10 @@ export async function POST(request: NextRequest) {
           if (nameParts.length >= 2) {
             firstName = nameParts[0];
             lastName = nameParts.slice(1).join(' ');
-            console.log(`Found name in field "${key}": ${firstName} ${lastName}`);
+            console.log(`Found name in field "${key}" (fallback): ${firstName} ${lastName}`);
           } else {
             firstName = String(value);
-            console.log(`Found firstName in field "${key}": ${firstName}`);
+            console.log(`Found firstName in field "${key}" (fallback): ${firstName}`);
           }
           break;
         }
