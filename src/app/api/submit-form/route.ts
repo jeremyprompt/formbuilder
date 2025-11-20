@@ -427,13 +427,30 @@ export async function POST(request: NextRequest) {
         try {
           console.log('=== FETCHING CUSTOMER ID ===');
           
-          // Ensure phone number has + prefix and URL encode it
-          const formattedPhone = phoneNumber.startsWith('+') ? phoneNumber : `+${phoneNumber}`;
+          // Ensure phone number has +1 country code (US)
+          let formattedPhone = phoneNumber.trim();
+          
+          // Only add +1 if it's not already there
+          if (!formattedPhone.startsWith('+1')) {
+            // Remove any existing + prefix if present
+            if (formattedPhone.startsWith('+')) {
+              formattedPhone = formattedPhone.substring(1);
+            }
+            // Remove leading 1 if present (US domestic format: 1-xxx-xxx-xxxx)
+            if (formattedPhone.startsWith('1') && formattedPhone.length === 11) {
+              formattedPhone = formattedPhone.substring(1);
+            }
+            // Add +1 prefix
+            formattedPhone = `+1${formattedPhone}`;
+          }
+          
           const encodedPhone = encodeURIComponent(formattedPhone);
           const getCustomerUrl = `https://${subdomain}.prompt.io/rest/1.0/customers/channel_types/SMS/channel_keys/${encodedPhone}`;
           
+          console.log('Original phone number:', phoneNumber);
+          console.log('Formatted phone number (with +1):', formattedPhone);
+          console.log('Encoded phone number:', encodedPhone);
           console.log('Fetching customer ID from:', getCustomerUrl);
-          console.log('Phone number used:', formattedPhone);
 
           const getCustomerController = new AbortController();
           const getCustomerTimeoutId = setTimeout(() => getCustomerController.abort(), 10000);
