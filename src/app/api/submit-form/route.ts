@@ -449,11 +449,37 @@ export async function POST(request: NextRequest) {
 
           clearTimeout(getCustomerTimeoutId);
 
+          console.log('Get customer response status:', getCustomerResponse.status);
+          console.log('Get customer response headers:', Object.fromEntries(getCustomerResponse.headers.entries()));
+
           if (getCustomerResponse.ok) {
-            const customerData = await getCustomerResponse.json();
-            console.log('Customer data received:', JSON.stringify(customerData, null, 2));
+            // Check if response has content before parsing
+            const contentType = getCustomerResponse.headers.get('content-type') || '';
+            let customerData;
             
-            const customerId = customerData.id;
+            try {
+              const responseText = await getCustomerResponse.text();
+              console.log('Get customer response text (first 500 chars):', responseText.substring(0, 500));
+              
+              if (responseText.trim()) {
+                try {
+                  customerData = JSON.parse(responseText);
+                  console.log('Customer data received:', JSON.stringify(customerData, null, 2));
+                } catch (parseError) {
+                  console.error('Error parsing customer data as JSON:', parseError);
+                  console.error('Response text:', responseText);
+                  throw new Error(`Failed to parse customer data: ${parseError instanceof Error ? parseError.message : 'Unknown error'}`);
+                }
+              } else {
+                console.error('Empty response body from get customer API');
+                throw new Error('Empty response from get customer API');
+              }
+            } catch (readError) {
+              console.error('Error reading get customer response:', readError);
+              throw readError;
+            }
+            
+            const customerId = customerData?.id;
             if (customerId) {
               console.log(`Customer ID: ${customerId}`);
               
@@ -494,11 +520,33 @@ export async function POST(request: NextRequest) {
 
               clearTimeout(updateCustomerTimeoutId);
 
+              console.log('Update customer response status:', updateCustomerResponse.status);
+              console.log('Update customer response headers:', Object.fromEntries(updateCustomerResponse.headers.entries()));
+
               if (updateCustomerResponse.ok) {
-                const updateResult = await updateCustomerResponse.json();
-                console.log('Customer data updated successfully:', JSON.stringify(updateResult, null, 2));
+                // Check if response has content before parsing
+                try {
+                  const responseText = await updateCustomerResponse.text();
+                  console.log('Update customer response text (first 500 chars):', responseText.substring(0, 500));
+                  
+                  if (responseText.trim()) {
+                    try {
+                      const updateResult = JSON.parse(responseText);
+                      console.log('Customer data updated successfully:', JSON.stringify(updateResult, null, 2));
+                    } catch (parseError) {
+                      console.warn('Response not valid JSON, but status was OK:', parseError);
+                      console.log('Response text:', responseText);
+                      // Non-fatal - consider it successful if status was OK
+                    }
+                  } else {
+                    console.log('Empty response body, but status was OK - considering update successful');
+                  }
+                } catch (readError) {
+                  console.error('Error reading update customer response:', readError);
+                  // Non-fatal - continue
+                }
               } else {
-                const errorText = await updateCustomerResponse.text();
+                const errorText = await updateCustomerResponse.text().catch(() => 'Unable to read error');
                 console.error('Failed to update customer data:', updateCustomerResponse.status, errorText);
                 // Non-fatal - continue
               }
@@ -506,7 +554,7 @@ export async function POST(request: NextRequest) {
               console.error('No customer ID found in response');
             }
           } else {
-            const errorText = await getCustomerResponse.text();
+            const errorText = await getCustomerResponse.text().catch(() => 'Unable to read error');
             console.error('Failed to get customer ID:', getCustomerResponse.status, errorText);
             // Non-fatal - continue
           }
