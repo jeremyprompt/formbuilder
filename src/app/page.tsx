@@ -264,13 +264,12 @@ function FormBuilderContent() {
           <form>
             ${form.fields.map(field => `
               <div class="form-field">
-                <label>${field.label} ${field.required ? '<span class="required">*</span>' : ''}</label>
                 ${renderFieldInput(field)}
               </div>
             `).join('')}
             <div style="margin-bottom: 15px; padding-left: 0;">
               <label class="checkbox-label" style="padding-left: 0; margin-left: 0;">
-                <input type="checkbox" id="text_messages" name="text_messages" value="yes">
+                <input type="checkbox" id="text_messages" name="text_messages" value="yes" checked>
                 Yes! I want to receive text messages
               </label>
             </div>
@@ -289,7 +288,7 @@ function FormBuilderContent() {
   const renderFieldInput = (field: FormField) => {
     switch (field.type) {
       case 'textarea':
-        return `<textarea placeholder=&quot;${field.label}&quot;></textarea>`;
+        return `<textarea aria-label=&quot;${field.label}&quot;></textarea>`;
       case 'select':
         const selectOptions = (field.options && field.options.length > 0) 
           ? field.options.map(opt => `<option value=&quot;${opt.replace(/"/g, '&quot;')}&quot;>${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</option>`).join('')
@@ -320,9 +319,9 @@ function FormBuilderContent() {
         }
         return `<input type=&quot;checkbox&quot; name=&quot;${field.id}&quot;> ${field.label}`;
       case 'email':
-        return `<input type=&quot;email&quot; placeholder=&quot;${field.label}&quot; pattern=&quot;[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,}$&quot; title=&quot;Please enter a valid email address&quot;>`;
+        return `<input type=&quot;email&quot; aria-label=&quot;${field.label}&quot; pattern=&quot;[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,}$&quot; title=&quot;Please enter a valid email address&quot;>`;
       default:
-        return `<input type=&quot;${field.type}&quot; placeholder=&quot;${field.label}&quot;>`;
+        return `<input type=&quot;${field.type}&quot; aria-label=&quot;${field.label}&quot;>`;
     }
   };
 

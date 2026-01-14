@@ -40,6 +40,7 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [textMessagesChecked, setTextMessagesChecked] = useState(true);
 
   useEffect(() => {
     const loadFormData = async () => {
@@ -156,6 +157,7 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
       if (e.currentTarget) {
         try {
           e.currentTarget.reset();
+          setTextMessagesChecked(true); // Reset checkbox to checked state
         } catch (resetError) {
           console.log('Form already cleared or removed from DOM');
         }
@@ -368,7 +370,8 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
                   id="text_messages"
                   name="text_messages"
                   value="yes"
-                  defaultChecked
+                  checked={textMessagesChecked}
+                  onChange={(e) => setTextMessagesChecked(e.target.checked)}
                   className="mr-2 text-blue-600 focus:ring-blue-500"
                 />
                 <label htmlFor="text_messages" className="text-sm font-medium text-gray-700">
