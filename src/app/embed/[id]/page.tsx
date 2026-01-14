@@ -175,9 +175,10 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
   };
 
   const renderField = (field: FormField) => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const fieldId = `field_${field.id}`; // Used in all field type cases (textarea, select, state, radio, checkbox, email, default)
     const requiredStar = field.required ? <span className="text-red-500">*</span> : null;
+    
+    // Generate fieldId - used in all switch cases below
+    const fieldId = `field_${field.id}`;
 
     switch (field.type) {
       case 'textarea':
