@@ -264,6 +264,7 @@ function FormBuilderContent() {
           <form>
             ${form.fields.map(field => `
               <div class="form-field">
+                <label>${field.label} ${field.required ? '<span class="required">*</span>' : ''}</label>
                 ${renderFieldInput(field)}
               </div>
             `).join('')}

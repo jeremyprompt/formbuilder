@@ -186,10 +186,12 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
       case 'textarea':
         return (
           <div key={field.id} className="mb-4">
+            <label htmlFor={fieldId} className="block text-sm font-medium text-gray-700 mb-2">
+              {field.label} {requiredStar}
+            </label>
             <textarea
               id={fieldId}
               name={field.id}
-              aria-label={field.label}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical text-gray-900"
               required={field.required}
             />
@@ -199,10 +201,12 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
       case 'select':
         return (
           <div key={field.id} className="mb-4">
+            <label htmlFor={fieldId} className="block text-sm font-medium text-gray-700 mb-2">
+              {field.label} {requiredStar}
+            </label>
             <select
               id={fieldId}
               name={field.id}
-              aria-label={field.label}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
               required={field.required}
             >
@@ -219,10 +223,12 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
       case 'state':
         return (
           <div key={field.id} className="mb-4">
+            <label htmlFor={fieldId} className="block text-sm font-medium text-gray-700 mb-2">
+              {field.label} {requiredStar}
+            </label>
             <select
               id={fieldId}
               name={field.id}
-              aria-label={field.label}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
               required={field.required}
             >
@@ -238,7 +244,10 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
 
       case 'radio':
         return (
-          <div key={field.id} className="mb-4" role="group" aria-label={field.label}>
+          <div key={field.id} className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              {field.label} {requiredStar}
+            </label>
             <div className="space-y-2">
               {(field.options || ['Option 1', 'Option 2']).map((option, index) => (
                 <div key={index} className="flex items-center">
@@ -264,7 +273,10 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
         // Otherwise, render as a single checkbox
         if (field.options && field.options.length > 0) {
           return (
-            <div key={field.id} className="mb-4" role="group" aria-label={field.label}>
+            <div key={field.id} className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {field.label} {requiredStar}
+              </label>
               <div className="space-y-2">
                 {field.options.map((option, index) => (
                   <div key={index} className="flex items-center">
@@ -292,7 +304,6 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
                 id={fieldId}
                 name={field.id}
                 value="true"
-                aria-label={field.label}
                 className="mr-2 text-blue-600 focus:ring-blue-500"
                 required={field.required}
               />
@@ -306,11 +317,13 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
       case 'email':
         return (
           <div key={field.id} className="mb-4">
+            <label htmlFor={fieldId} className="block text-sm font-medium text-gray-700 mb-2">
+              {field.label} {requiredStar}
+            </label>
             <input
               type="email"
               id={fieldId}
               name={field.id}
-              aria-label={field.label}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
               required={field.required}
               pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
@@ -322,11 +335,13 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
       default:
         return (
           <div key={field.id} className="mb-4">
+            <label htmlFor={fieldId} className="block text-sm font-medium text-gray-700 mb-2">
+              {field.label} {requiredStar}
+            </label>
             <input
               type={field.type}
               id={fieldId}
               name={field.id}
-              aria-label={field.label}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
               required={field.required}
             />
