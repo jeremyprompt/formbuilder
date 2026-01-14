@@ -446,7 +446,7 @@ function FieldEditor({ field, fieldTypes, onUpdate, onRemove }: FieldEditorProps
           </div>
           <div className="space-y-2">
             {(field.options || []).length === 0 ? (
-              <p className="text-sm text-gray-500 italic">No options added yet. Click "Add Option" to add choices.</p>
+              <p className="text-sm text-gray-500 italic">No options added yet. Click Add Option to add choices.</p>
             ) : (
               (field.options || []).map((option, index) => (
                 <div key={index} className="flex items-center gap-2">
