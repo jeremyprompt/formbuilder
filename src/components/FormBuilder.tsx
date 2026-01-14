@@ -354,6 +354,7 @@ function FieldEditor({ field, fieldTypes, onUpdate, onRemove }: FieldEditorProps
                 onChange={(e) => setEditLabel(e.target.value)}
                 className="flex-1 px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
                 autoFocus
+                onFocus={(e) => e.target.select()}
                 onBlur={handleSaveLabel}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSaveLabel();
