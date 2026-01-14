@@ -258,7 +258,10 @@ function FormBuilderContent() {
             body { font-family: Arial, sans-serif; padding: 20px; }
             .form-field { margin-bottom: 15px; }
             label { display: block; margin-bottom: 5px; font-weight: bold; }
-            input, textarea, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+            input[type="text"], input[type="email"], textarea, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+            input[type="radio"], input[type="checkbox"] { width: auto; margin-right: 8px; }
+            .radio-option, .checkbox-option { display: flex; align-items: center; margin-bottom: 8px; }
+            .radio-option label, .checkbox-option label { display: inline; font-weight: normal; margin: 0; margin-left: 4px; }
             .required { color: red; }
             .checkbox-label { display: flex; align-items: center; gap: 8px; font-weight: normal; }
             .disclaimer { font-size: 11px; color: #666; margin-top: 10px; line-height: 1.4; }
@@ -316,15 +319,23 @@ function FormBuilderContent() {
           <option value=&quot;VA&quot;>VA</option><option value=&quot;WA&quot;>WA</option><option value=&quot;WV&quot;>WV</option><option value=&quot;WI&quot;>WI</option><option value=&quot;WY&quot;>WY</option>
         </select>`;
       case 'radio':
-        const radioOptions = (field.options && field.options.length > 0)
-          ? field.options.map(opt => `<input type=&quot;radio&quot; name=&quot;${field.id}&quot; value=&quot;${opt.replace(/"/g, '&quot;')}&quot;> ${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}<br>`).join('')
-          : '<input type=&quot;radio&quot; name=&quot;' + field.id + '&quot;> Option 1<br><input type=&quot;radio&quot; name=&quot;' + field.id + '&quot;> Option 2';
-        return radioOptions;
-      case 'checkbox':
-        if (field.options && field.options.length > 0) {
-          return field.options.map(opt => `<input type=&quot;checkbox&quot; name=&quot;${field.id}&quot; value=&quot;${opt.replace(/"/g, '&quot;')}&quot;> ${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}<br>`).join('');
+        const radioOptions = (field.options && field.options.length > 0) ? field.options : [];
+        if (radioOptions.length > 0) {
+          return radioOptions.map(opt => {
+            const safeOpt = opt.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return `<div class="radio-option"><input type="radio" name="${field.id}" value="${safeOpt}" id="radio_${field.id}_${radioOptions.indexOf(opt)}"><label for="radio_${field.id}_${radioOptions.indexOf(opt)}">${safeOpt}</label></div>`;
+          }).join('');
         }
-        return `<input type=&quot;checkbox&quot; name=&quot;${field.id}&quot;> ${field.label}`;
+        return '<p style="color: #999; font-style: italic;">No options configured</p>';
+      case 'checkbox':
+        const checkboxOptions = (field.options && field.options.length > 0) ? field.options : [];
+        if (checkboxOptions.length > 0) {
+          return checkboxOptions.map(opt => {
+            const safeOpt = opt.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            return `<div class="checkbox-option"><input type="checkbox" name="${field.id}" value="${safeOpt}" id="checkbox_${field.id}_${checkboxOptions.indexOf(opt)}"><label for="checkbox_${field.id}_${checkboxOptions.indexOf(opt)}">${safeOpt}</label></div>`;
+          }).join('');
+        }
+        return `<div class="checkbox-option"><input type="checkbox" name="${field.id}" value="true" id="checkbox_${field.id}"><label for="checkbox_${field.id}">${field.label}</label></div>`;
       case 'email':
         return `<input type=&quot;email&quot; aria-label=&quot;${field.label}&quot; pattern=&quot;[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,}$&quot; title=&quot;Please enter a valid email address&quot;>`;
       default:
