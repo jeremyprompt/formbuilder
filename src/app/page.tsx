@@ -289,40 +289,40 @@ function FormBuilderContent() {
   const renderFieldInput = (field: FormField) => {
     switch (field.type) {
       case 'textarea':
-        return `<textarea placeholder="${field.label}"></textarea>`;
+        return `<textarea placeholder=&quot;${field.label}&quot;></textarea>`;
       case 'select':
         const selectOptions = (field.options && field.options.length > 0) 
-          ? field.options.map(opt => `<option value="${opt.replace(/"/g, '&quot;')}">${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</option>`).join('')
+          ? field.options.map(opt => `<option value=&quot;${opt.replace(/"/g, '&quot;')}&quot;>${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</option>`).join('')
           : '';
-        return `<select><option value="">Select an option</option>${selectOptions}</select>`;
+        return `<select><option value=&quot;&quot;>Select an option</option>${selectOptions}</select>`;
       case 'state':
         return `<select>
-          <option value="">Select a state</option>
-          <option value="AL">AL</option><option value="AK">AK</option><option value="AZ">AZ</option><option value="AR">AR</option><option value="CA">CA</option>
-          <option value="CO">CO</option><option value="CT">CT</option><option value="DE">DE</option><option value="FL">FL</option><option value="GA">GA</option>
-          <option value="HI">HI</option><option value="ID">ID</option><option value="IL">IL</option><option value="IN">IN</option><option value="IA">IA</option>
-          <option value="KS">KS</option><option value="KY">KY</option><option value="LA">LA</option><option value="ME">ME</option><option value="MD">MD</option>
-          <option value="MA">MA</option><option value="MI">MI</option><option value="MN">MN</option><option value="MS">MS</option><option value="MO">MO</option>
-          <option value="MT">MT</option><option value="NE">NE</option><option value="NV">NV</option><option value="NH">NH</option><option value="NJ">NJ</option>
-          <option value="NM">NM</option><option value="NY">NY</option><option value="NC">NC</option><option value="ND">ND</option><option value="OH">OH</option>
-          <option value="OK">OK</option><option value="OR">OR</option><option value="PA">PA</option><option value="RI">RI</option><option value="SC">SC</option>
-          <option value="SD">SD</option><option value="TN">TN</option><option value="TX">TX</option><option value="UT">UT</option><option value="VT">VT</option>
-          <option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option><option value="WI">WI</option><option value="WY">WY</option>
+          <option value=&quot;&quot;>Select a state</option>
+          <option value=&quot;AL&quot;>AL</option><option value=&quot;AK&quot;>AK</option><option value=&quot;AZ&quot;>AZ</option><option value=&quot;AR&quot;>AR</option><option value=&quot;CA&quot;>CA</option>
+          <option value=&quot;CO&quot;>CO</option><option value=&quot;CT&quot;>CT</option><option value=&quot;DE&quot;>DE</option><option value=&quot;FL&quot;>FL</option><option value=&quot;GA&quot;>GA</option>
+          <option value=&quot;HI&quot;>HI</option><option value=&quot;ID&quot;>ID</option><option value=&quot;IL&quot;>IL</option><option value=&quot;IN&quot;>IN</option><option value=&quot;IA&quot;>IA</option>
+          <option value=&quot;KS&quot;>KS</option><option value=&quot;KY&quot;>KY</option><option value=&quot;LA&quot;>LA</option><option value=&quot;ME&quot;>ME</option><option value=&quot;MD&quot;>MD</option>
+          <option value=&quot;MA&quot;>MA</option><option value=&quot;MI&quot;>MI</option><option value=&quot;MN&quot;>MN</option><option value=&quot;MS&quot;>MS</option><option value=&quot;MO&quot;>MO</option>
+          <option value=&quot;MT&quot;>MT</option><option value=&quot;NE&quot;>NE</option><option value=&quot;NV&quot;>NV</option><option value=&quot;NH&quot;>NH</option><option value=&quot;NJ&quot;>NJ</option>
+          <option value=&quot;NM&quot;>NM</option><option value=&quot;NY&quot;>NY</option><option value=&quot;NC&quot;>NC</option><option value=&quot;ND&quot;>ND</option><option value=&quot;OH&quot;>OH</option>
+          <option value=&quot;OK&quot;>OK</option><option value=&quot;OR&quot;>OR</option><option value=&quot;PA&quot;>PA</option><option value=&quot;RI&quot;>RI</option><option value=&quot;SC&quot;>SC</option>
+          <option value=&quot;SD&quot;>SD</option><option value=&quot;TN&quot;>TN</option><option value=&quot;TX&quot;>TX</option><option value=&quot;UT&quot;>UT</option><option value=&quot;VT&quot;>VT</option>
+          <option value=&quot;VA&quot;>VA</option><option value=&quot;WA&quot;>WA</option><option value=&quot;WV&quot;>WV</option><option value=&quot;WI&quot;>WI</option><option value=&quot;WY&quot;>WY</option>
         </select>`;
       case 'radio':
         const radioOptions = (field.options && field.options.length > 0)
-          ? field.options.map(opt => `<input type="radio" name="${field.id}" value="${opt.replace(/"/g, '&quot;')}"> ${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}<br>`).join('')
-          : '<input type="radio" name="' + field.id + '"> Option 1<br><input type="radio" name="' + field.id + '"> Option 2';
+          ? field.options.map(opt => `<input type=&quot;radio&quot; name=&quot;${field.id}&quot; value=&quot;${opt.replace(/"/g, '&quot;')}&quot;> ${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}<br>`).join('')
+          : '<input type=&quot;radio&quot; name=&quot;' + field.id + '&quot;> Option 1<br><input type=&quot;radio&quot; name=&quot;' + field.id + '&quot;> Option 2';
         return radioOptions;
       case 'checkbox':
         if (field.options && field.options.length > 0) {
-          return field.options.map(opt => `<input type="checkbox" name="${field.id}" value="${opt.replace(/"/g, '&quot;')}"> ${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}<br>`).join('');
+          return field.options.map(opt => `<input type=&quot;checkbox&quot; name=&quot;${field.id}&quot; value=&quot;${opt.replace(/"/g, '&quot;')}&quot;> ${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}<br>`).join('');
         }
-        return `<input type="checkbox" name="${field.id}"> ${field.label}`;
+        return `<input type=&quot;checkbox&quot; name=&quot;${field.id}&quot;> ${field.label}`;
       case 'email':
-        return `<input type="email" placeholder="${field.label}" pattern="[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,}$" title=&quot;Please enter a valid email address&quot;>`;
+        return `<input type=&quot;email&quot; placeholder=&quot;${field.label}&quot; pattern=&quot;[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,}$&quot; title=&quot;Please enter a valid email address&quot;>`;
       default:
-        return `<input type="${field.type}" placeholder="${field.label}">`;
+        return `<input type=&quot;${field.type}&quot; placeholder=&quot;${field.label}&quot;>`;
     }
   };
 
