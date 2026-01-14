@@ -150,9 +150,12 @@ export async function GET() {
                 required
               };
               
-              // Add options if they were parsed
-              if (options && options.length > 0) {
+              // Add options if they were parsed (always include for select/radio/checkbox, even if empty)
+              if (options !== undefined) {
                 parsedField.options = options;
+              } else if (type === 'select' || type === 'radio' || type === 'checkbox') {
+                // If no options were found but field type requires options, initialize empty array
+                parsedField.options = [];
               }
               
               fields.push(parsedField);

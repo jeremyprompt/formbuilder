@@ -61,9 +61,10 @@ function FormBuilderContent() {
       // Skip automatic fields - they don't need to be saved
       if (!automaticFieldIds.includes(field.id)) {
         let fieldValue = `${field.label} (${field.type}${field.required ? ', required' : ''})`;
-        // Add options if they exist (for select, radio, checkbox)
-        if (field.options && field.options.length > 0) {
-          fieldValue += ` [${JSON.stringify(field.options)}]`;
+        // Always save options array for select, radio, checkbox (even if empty) to preserve field type
+        if (field.type === 'select' || field.type === 'radio' || field.type === 'checkbox') {
+          const options = field.options || [];
+          fieldValue += ` [${JSON.stringify(options)}]`;
         }
         payload[`field_${fieldIndex}`] = fieldValue;
         fieldIndex++;

@@ -59,6 +59,11 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
       if (data.success && data.forms) {
         const foundForm = data.forms.find((f: Form) => f.id === parseInt(formId));
         if (foundForm) {
+          console.log('Loaded form:', foundForm);
+          console.log('Form fields:', foundForm.fields);
+          foundForm.fields.forEach((field: FormField) => {
+            console.log(`Field: ${field.label}, Type: ${field.type}, Options:`, field.options);
+          });
           setForm(foundForm);
         } else {
           setMessage({ type: 'error', text: 'Form not found' });
@@ -243,27 +248,32 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
         );
 
       case 'radio':
+        const radioOptions = (field.options && field.options.length > 0) ? field.options : [];
         return (
           <div key={field.id} className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               {field.label} {requiredStar}
             </label>
             <div className="space-y-2">
-              {(field.options || ['Option 1', 'Option 2']).map((option, index) => (
-                <div key={index} className="flex items-center">
-                  <input
-                    type="radio"
-                    id={`${fieldId}_${index}`}
-                    name={field.id}
-                    value={option}
-                    className="mr-2 text-blue-600 focus:ring-blue-500"
-                    required={field.required}
-                  />
-                  <label htmlFor={`${fieldId}_${index}`} className="text-sm text-gray-700">
-                    {option}
-                  </label>
-                </div>
-              ))}
+              {radioOptions.length > 0 ? (
+                radioOptions.map((option, index) => (
+                  <div key={index} className="flex items-center">
+                    <input
+                      type="radio"
+                      id={`${fieldId}_${index}`}
+                      name={field.id}
+                      value={option}
+                      className="mr-2 text-blue-600 focus:ring-blue-500"
+                      required={field.required}
+                    />
+                    <label htmlFor={`${fieldId}_${index}`} className="text-sm text-gray-700">
+                      {option}
+                    </label>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 italic">No options configured for this field.</p>
+              )}
             </div>
           </div>
         );
@@ -271,14 +281,15 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
       case 'checkbox':
         // If checkbox has options, render multiple checkboxes (one per option)
         // Otherwise, render as a single checkbox
-        if (field.options && field.options.length > 0) {
+        const checkboxOptions = (field.options && field.options.length > 0) ? field.options : [];
+        if (checkboxOptions.length > 0) {
           return (
             <div key={field.id} className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 {field.label} {requiredStar}
               </label>
               <div className="space-y-2">
-                {field.options.map((option, index) => (
+                {checkboxOptions.map((option, index) => (
                   <div key={index} className="flex items-center">
                     <input
                       type="checkbox"
