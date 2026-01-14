@@ -201,6 +201,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Format phone number to +1xxxxxxxxxx format
+    // Handles: (xxx) xxx-xxxx, xxx-xxx-xxxx, xxx xxx-xxxx, 1xxxxxxxxxx, etc.
+    const formatPhoneNumber = (phone: string): string => {
+      // Remove all non-digit characters
+      let digits = phone.replace(/\D/g, '');
+      
+      // Remove leading 1 if present (US country code)
+      if (digits.length === 11 && digits.startsWith('1')) {
+        digits = digits.substring(1);
+      }
+      
+      // Ensure we have exactly 10 digits
+      if (digits.length !== 10) {
+        return phone; // Return original if invalid length
+      }
+      
+      // Return in +1xxxxxxxxxx format
+      return `+1${digits}`;
+    };
+
+    // Format the phone number immediately after extraction
+    phoneNumber = formatPhoneNumber(phoneNumber);
+    console.log('Formatted phone number:', phoneNumber);
+
     // Extract first and last name
     let firstName = submission.data.firstName || submission.data.first_name || submission.data.fname || '';
     let lastName = submission.data.lastName || submission.data.last_name || submission.data.lname || '';
@@ -435,22 +459,8 @@ export async function POST(request: NextRequest) {
         try {
           console.log('=== FETCHING CUSTOMER ID ===');
           
-          // Ensure phone number has +1 country code (US)
-          let formattedPhone = phoneNumber.trim();
-          
-          // Only add +1 if it's not already there
-          if (!formattedPhone.startsWith('+1')) {
-            // Remove any existing + prefix if present
-            if (formattedPhone.startsWith('+')) {
-              formattedPhone = formattedPhone.substring(1);
-            }
-            // Remove leading 1 if present (US domestic format: 1-xxx-xxx-xxxx)
-            if (formattedPhone.startsWith('1') && formattedPhone.length === 11) {
-              formattedPhone = formattedPhone.substring(1);
-            }
-            // Add +1 prefix
-            formattedPhone = `+1${formattedPhone}`;
-          }
+          // Phone number is already formatted to +1xxxxxxxxxx format
+          const formattedPhone = phoneNumber;
           
           const encodedPhone = encodeURIComponent(formattedPhone);
           const getCustomerUrl = `https://${subdomain}.prompt.io/rest/1.0/customers/channel_types/SMS/channel_keys/${encodedPhone}`;

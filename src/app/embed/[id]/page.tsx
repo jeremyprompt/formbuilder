@@ -31,6 +31,26 @@ const US_STATE_ABBREVIATIONS = [
   'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
 ];
 
+// Format phone number to +1xxxxxxxxxx format
+// Handles: (xxx) xxx-xxxx, xxx-xxx-xxxx, xxx xxx-xxxx, 1xxxxxxxxxx, etc.
+const formatPhoneNumber = (phone: string): string => {
+  // Remove all non-digit characters
+  let digits = phone.replace(/\D/g, '');
+  
+  // Remove leading 1 if present (US country code)
+  if (digits.length === 11 && digits.startsWith('1')) {
+    digits = digits.substring(1);
+  }
+  
+  // Ensure we have exactly 10 digits
+  if (digits.length !== 10) {
+    return phone; // Return original if invalid length
+  }
+  
+  // Return in +1xxxxxxxxxx format
+  return `+1${digits}`;
+};
+
 export default function EmbedForm({ params }: { params: Promise<{ id: string }> }) {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl');
@@ -110,7 +130,17 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
       }
       
       formData.forEach((value, key) => {
-        data[key] = value.toString();
+        const valueStr = value.toString();
+        // Format phone numbers before submission
+        const field = form.fields.find(f => f.id === key);
+        const label = field?.label?.toLowerCase() || '';
+        const keyLower = key.toLowerCase();
+        if (label.includes('phone') || label.includes('mobile') || label.includes('cell') || 
+            keyLower.includes('phone') || keyLower.includes('mobile') || keyLower.includes('cell')) {
+          data[key] = formatPhoneNumber(valueStr);
+        } else {
+          data[key] = valueStr;
+        }
       });
 
       console.log('=== CLIENT-SIDE FORM SUBMISSION ===');
@@ -344,6 +374,12 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
         );
 
       default:
+        // Check if this is a phone number field
+        const isPhoneField = field.id === 'phone_number' || 
+                            field.label?.toLowerCase().includes('phone') ||
+                            field.label?.toLowerCase().includes('mobile') ||
+                            field.label?.toLowerCase().includes('cell');
+        
         return (
           <div key={field.id} className="mb-4">
             <label htmlFor={fieldId} className="block text-sm font-medium text-gray-700 mb-2">
@@ -355,6 +391,15 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
               name={field.id}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
               required={field.required}
+              onBlur={(e) => {
+                // Format phone number when user leaves the field
+                if (isPhoneField) {
+                  const formatted = formatPhoneNumber(e.target.value);
+                  if (formatted !== e.target.value && formatted.length === 13) {
+                    e.target.value = formatted;
+                  }
+                }
+              }}
             />
           </div>
         );
