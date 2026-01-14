@@ -70,7 +70,7 @@ export default function FormBuilder({ form, onSave, onCancel }: FormBuilderProps
     { value: 'text', label: 'Text Input' },
     { value: 'email', label: 'Email' },
     { value: 'textarea', label: 'Textarea' },
-    { value: 'state', label: '2 Character State' },
+    { value: 'state', label: 'State (abb.)' },
     { value: 'select', label: 'Dropdown' },
     { value: 'radio', label: 'Radio Buttons' },
     { value: 'checkbox', label: 'Checkbox' }
@@ -302,11 +302,44 @@ function FieldEditor({ field, fieldTypes, onUpdate, onRemove }: FieldEditorProps
 
     // If switching away from state, clear its forced options.
     if (field.type === 'state') {
-      onUpdate({ type: nextType, options: [] });
+      // Initialize empty options array for select/radio/checkbox if switching to them
+      if (nextType === 'select' || nextType === 'radio' || nextType === 'checkbox') {
+        onUpdate({ type: nextType, options: [] });
+      } else {
+        onUpdate({ type: nextType, options: [] });
+      }
+      return;
+    }
+
+    // When switching to select/radio/checkbox, initialize with empty options if not already set
+    if (nextType === 'select' || nextType === 'radio' || nextType === 'checkbox') {
+      if (!field.options || field.options.length === 0) {
+        onUpdate({ type: nextType, options: [] });
+      } else {
+        onUpdate({ type: nextType });
+      }
       return;
     }
 
     onUpdate({ type: nextType });
+  };
+
+  const addOption = (fieldId: string) => {
+    const currentOptions = field.options || [];
+    onUpdate({ options: [...currentOptions, 'New Option'] });
+  };
+
+  const updateOption = (fieldId: string, optionIndex: number, newValue: string) => {
+    const currentOptions = field.options || [];
+    const updatedOptions = [...currentOptions];
+    updatedOptions[optionIndex] = newValue;
+    onUpdate({ options: updatedOptions });
+  };
+
+  const removeOption = (fieldId: string, optionIndex: number) => {
+    const currentOptions = field.options || [];
+    const updatedOptions = currentOptions.filter((_, index) => index !== optionIndex);
+    onUpdate({ options: updatedOptions });
   };
 
   return (
@@ -394,6 +427,50 @@ function FieldEditor({ field, fieldTypes, onUpdate, onRemove }: FieldEditorProps
           </label>
         </div>
       </div>
+
+      {/* Options Management for select, radio, and checkbox */}
+      {(field.type === 'select' || field.type === 'radio' || field.type === 'checkbox') && (
+        <div className="mt-4 pt-4 border-t border-gray-300">
+          <div className="flex justify-between items-center mb-3">
+            <label className="block text-sm font-medium text-gray-700">
+              Options
+            </label>
+            <button
+              type="button"
+              onClick={() => addOption(field.id)}
+              className="text-sm bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-lg font-medium transition-colors flex items-center gap-1"
+            >
+              <Plus className="w-4 h-4" />
+              Add Option
+            </button>
+          </div>
+          <div className="space-y-2">
+            {(field.options || []).length === 0 ? (
+              <p className="text-sm text-gray-500 italic">No options added yet. Click "Add Option" to add choices.</p>
+            ) : (
+              (field.options || []).map((option, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={option}
+                    onChange={(e) => updateOption(field.id, index, e.target.value)}
+                    className="flex-1 px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 text-sm"
+                    placeholder={`Option ${index + 1}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeOption(field.id, index)}
+                    className="text-red-600 hover:text-red-800 p-1"
+                    title="Remove option"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

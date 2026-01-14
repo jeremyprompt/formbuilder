@@ -85,6 +85,24 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
       const formData = new FormData(e.currentTarget);
       const data: Record<string, string> = {};
       
+      // Validate email fields
+      const emailRegex = /^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/i;
+      for (const field of form.fields) {
+        if (field.type === 'email') {
+          const emailValue = formData.get(field.id)?.toString() || '';
+          if (field.required && !emailValue) {
+            setMessage({ type: 'error', text: `Please enter a valid email address for ${field.label}` });
+            setSubmitting(false);
+            return;
+          }
+          if (emailValue && !emailRegex.test(emailValue)) {
+            setMessage({ type: 'error', text: `Please enter a valid email address for ${field.label}` });
+            setSubmitting(false);
+            return;
+          }
+        }
+      }
+      
       formData.forEach((value, key) => {
         data[key] = value.toString();
       });
@@ -248,6 +266,33 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
         );
 
       case 'checkbox':
+        // If checkbox has options, render multiple checkboxes (one per option)
+        // Otherwise, render as a single checkbox
+        if (field.options && field.options.length > 0) {
+          return (
+            <div key={field.id} className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {field.label} {requiredStar}
+              </label>
+              <div className="space-y-2">
+                {field.options.map((option, index) => (
+                  <div key={index} className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id={`${fieldId}_${index}`}
+                      name={field.id}
+                      value={option}
+                      className="mr-2 text-blue-600 focus:ring-blue-500"
+                    />
+                    <label htmlFor={`${fieldId}_${index}`} className="text-sm text-gray-700">
+                      {option}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        }
         return (
           <div key={field.id} className="mb-4">
             <div className="flex items-center">
@@ -263,6 +308,25 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
                 {field.label} {requiredStar}
               </label>
             </div>
+          </div>
+        );
+
+      case 'email':
+        return (
+          <div key={field.id} className="mb-4">
+            <label htmlFor={fieldId} className="block text-sm font-medium text-gray-700 mb-2">
+              {field.label} {requiredStar}
+            </label>
+            <input
+              type="email"
+              id={fieldId}
+              name={field.id}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+              placeholder={field.label}
+              required={field.required}
+              pattern="[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$"
+              title="Please enter a valid email address"
+            />
           </div>
         );
 

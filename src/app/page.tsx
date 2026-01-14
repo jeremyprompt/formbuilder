@@ -291,7 +291,10 @@ function FormBuilderContent() {
       case 'textarea':
         return `<textarea placeholder="${field.label}"></textarea>`;
       case 'select':
-        return `<select><option>Select an option</option></select>`;
+        const selectOptions = (field.options && field.options.length > 0) 
+          ? field.options.map(opt => `<option value="${opt.replace(/"/g, '&quot;')}">${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</option>`).join('')
+          : '';
+        return `<select><option value="">Select an option</option>${selectOptions}</select>`;
       case 'state':
         return `<select>
           <option value="">Select a state</option>
@@ -307,9 +310,17 @@ function FormBuilderContent() {
           <option value="VA">VA</option><option value="WA">WA</option><option value="WV">WV</option><option value="WI">WI</option><option value="WY">WY</option>
         </select>`;
       case 'radio':
-        return `<input type="radio" name="${field.id}"> Option 1<br><input type="radio" name="${field.id}"> Option 2`;
+        const radioOptions = (field.options && field.options.length > 0)
+          ? field.options.map(opt => `<input type="radio" name="${field.id}" value="${opt.replace(/"/g, '&quot;')}"> ${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}<br>`).join('')
+          : '<input type="radio" name="' + field.id + '"> Option 1<br><input type="radio" name="' + field.id + '"> Option 2';
+        return radioOptions;
       case 'checkbox':
-        return `<input type="checkbox"> ${field.label}`;
+        if (field.options && field.options.length > 0) {
+          return field.options.map(opt => `<input type="checkbox" name="${field.id}" value="${opt.replace(/"/g, '&quot;')}"> ${opt.replace(/</g, '&lt;').replace(/>/g, '&gt;')}<br>`).join('');
+        }
+        return `<input type="checkbox" name="${field.id}"> ${field.label}`;
+      case 'email':
+        return `<input type="email" placeholder="${field.label}" pattern="[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,}$" title="Please enter a valid email address">`;
       default:
         return `<input type="${field.type}" placeholder="${field.label}">`;
     }
