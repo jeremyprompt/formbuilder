@@ -320,7 +320,7 @@ function FormBuilderContent() {
         }
         return `<input type="checkbox" name="${field.id}"> ${field.label}`;
       case 'email':
-        return `<input type="email" placeholder="${field.label}" pattern="[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,}$" title="Please enter a valid email address">`;
+        return `<input type="email" placeholder="${field.label}" pattern="[a-z0-9._%+\\-]+@[a-z0-9.\\-]+\\.[a-z]{2,}$" title=&quot;Please enter a valid email address&quot;>`;
       default:
         return `<input type="${field.type}" placeholder="${field.label}">`;
     }
