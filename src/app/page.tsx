@@ -60,7 +60,12 @@ function FormBuilderContent() {
     form.fields.forEach((field) => {
       // Skip automatic fields - they don't need to be saved
       if (!automaticFieldIds.includes(field.id)) {
-        payload[`field_${fieldIndex}`] = `${field.label} (${field.type}${field.required ? ', required' : ''})`;
+        let fieldValue = `${field.label} (${field.type}${field.required ? ', required' : ''})`;
+        // Add options if they exist (for select, radio, checkbox)
+        if (field.options && field.options.length > 0) {
+          fieldValue += ` [${JSON.stringify(field.options)}]`;
+        }
+        payload[`field_${fieldIndex}`] = fieldValue;
         fieldIndex++;
       }
     });

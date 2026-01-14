@@ -22,6 +22,7 @@ interface ParsedField {
   type: string;
   label: string;
   required: boolean;
+  options?: string[];
 }
 
 interface ParsedForm {
@@ -108,8 +109,24 @@ export async function GET() {
         if (key.startsWith('field_')) {
           const fieldValue = form[key];
           if (fieldValue && typeof fieldValue === 'string') {
+            // Parse field format: "Label (type, required) [options]" or "Label (type, required)" or "Label (type)"
+            // First, try to extract options if present (JSON array in brackets)
+            let options: string[] | undefined;
+            let fieldString = fieldValue;
+            const optionsMatch = fieldValue.match(/\[(.+?)\]$/);
+            if (optionsMatch) {
+              try {
+                options = JSON.parse(optionsMatch[1]);
+                // Remove the options part from the string for further parsing
+                fieldString = fieldValue.substring(0, optionsMatch.index).trim();
+              } catch (e) {
+                // If JSON parsing fails, ignore options
+                console.warn('Failed to parse options for field:', key, e);
+              }
+            }
+            
             // Parse field format: "Label (type, required)" or "Label (type)"
-            const match = fieldValue.match(/^(.+?)\s*\((.+?)\)\s*$/);
+            const match = fieldString.match(/^(.+?)\s*\((.+?)\)\s*$/);
             if (match) {
               const label = match[1].trim();
               const meta = match[2].trim();
@@ -126,12 +143,19 @@ export async function GET() {
                 }
               });
               
-              fields.push({
+              const parsedField: ParsedField = {
                 id: key,
                 type,
                 label,
                 required
-              });
+              };
+              
+              // Add options if they were parsed
+              if (options && options.length > 0) {
+                parsedField.options = options;
+              }
+              
+              fields.push(parsedField);
             }
           }
         }
