@@ -124,8 +124,17 @@ export async function POST(request: NextRequest) {
             if (key.startsWith('field_')) {
               const fieldValue = form[key];
               if (fieldValue && typeof fieldValue === 'string') {
+                // Parse field format: "Label (type, required) [options]" or "Label (type, required)" or "Label (type)"
+                // First, remove options array if present (JSON array in brackets at the end)
+                let fieldString = fieldValue;
+                const optionsMatch = fieldValue.match(/\[(.+?)\]$/);
+                if (optionsMatch) {
+                  // Remove the options part from the string for parsing
+                  fieldString = fieldValue.substring(0, optionsMatch.index).trim();
+                }
+                
                 // Parse field format: "Label (type, required)" or "Label (type)"
-                const match = fieldValue.match(/^(.+?)\s*\((.+?)\)\s*$/);
+                const match = fieldString.match(/^(.+?)\s*\((.+?)\)\s*$/);
                 if (match) {
                   const label = match[1].trim();
                   fieldLabelMap[key] = label;
