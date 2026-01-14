@@ -29,6 +29,14 @@ const AUTOMATIC_FIELDS: FormField[] = [
   { id: 'phone_number', type: 'text', label: 'Phone Number', required: true }
 ];
 
+const US_STATE_ABBREVIATIONS = [
+  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+];
+
 // Check if a field is an automatic field
 const isAutomaticField = (fieldId: string): boolean => {
   return AUTOMATIC_FIELDS.some(f => f.id === fieldId);
@@ -62,6 +70,7 @@ export default function FormBuilder({ form, onSave, onCancel }: FormBuilderProps
     { value: 'text', label: 'Text Input' },
     { value: 'email', label: 'Email' },
     { value: 'textarea', label: 'Textarea' },
+    { value: 'state', label: '2 Character State' },
     { value: 'select', label: 'Dropdown' },
     { value: 'radio', label: 'Radio Buttons' },
     { value: 'checkbox', label: 'Checkbox' }
@@ -284,6 +293,22 @@ function FieldEditor({ field, fieldTypes, onUpdate, onRemove }: FieldEditorProps
     }
   };
 
+  const handleTypeChange = (nextType: string) => {
+    // For "2 Character State", force a dropdown of all US states.
+    if (nextType === 'state') {
+      onUpdate({ type: nextType, options: US_STATE_ABBREVIATIONS });
+      return;
+    }
+
+    // If switching away from state, clear its forced options.
+    if (field.type === 'state') {
+      onUpdate({ type: nextType, options: [] });
+      return;
+    }
+
+    onUpdate({ type: nextType });
+  };
+
   return (
     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
       <div className="flex justify-between items-start">
@@ -346,7 +371,7 @@ function FieldEditor({ field, fieldTypes, onUpdate, onRemove }: FieldEditorProps
           </label>
           <select
             value={field.type}
-            onChange={(e) => onUpdate({ type: e.target.value })}
+            onChange={(e) => handleTypeChange(e.target.value)}
             className="px-3 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
           >
             {fieldTypes.map((type) => (

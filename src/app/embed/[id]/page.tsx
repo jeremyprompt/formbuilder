@@ -23,6 +23,14 @@ interface FormField {
   options?: string[];
 }
 
+const US_STATE_ABBREVIATIONS = [
+  'AL', 'AK', 'AZ', 'AR', 'CA', 'CO', 'CT', 'DE', 'FL', 'GA',
+  'HI', 'ID', 'IL', 'IN', 'IA', 'KS', 'KY', 'LA', 'ME', 'MD',
+  'MA', 'MI', 'MN', 'MS', 'MO', 'MT', 'NE', 'NV', 'NH', 'NJ',
+  'NM', 'NY', 'NC', 'ND', 'OH', 'OK', 'OR', 'PA', 'RI', 'SC',
+  'SD', 'TN', 'TX', 'UT', 'VT', 'VA', 'WA', 'WV', 'WI', 'WY'
+];
+
 export default function EmbedForm({ params }: { params: Promise<{ id: string }> }) {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl');
@@ -185,6 +193,28 @@ export default function EmbedForm({ params }: { params: Promise<{ id: string }> 
               {(field.options || []).map((option) => (
                 <option key={option} value={option}>
                   {option}
+                </option>
+              ))}
+            </select>
+          </div>
+        );
+
+      case 'state':
+        return (
+          <div key={field.id} className="mb-4">
+            <label htmlFor={fieldId} className="block text-sm font-medium text-gray-700 mb-2">
+              {field.label} {requiredStar}
+            </label>
+            <select
+              id={fieldId}
+              name={field.id}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+              required={field.required}
+            >
+              <option value="">Select a state</option>
+              {US_STATE_ABBREVIATIONS.map((abbr) => (
+                <option key={abbr} value={abbr}>
+                  {abbr}
                 </option>
               ))}
             </select>
