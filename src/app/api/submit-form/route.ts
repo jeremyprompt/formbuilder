@@ -21,6 +21,7 @@ interface SchemaForm {
   field_9?: string;
   formTitle: string;
   formDescription: string;
+  confirmationMessage?: string;
   [key: string]: string | undefined;
 }
 
@@ -77,8 +78,9 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Step 0: Load form structure to map field IDs to labels
+    // Step 0: Load form structure to map field IDs to labels and get confirmation message
     const fieldLabelMap: Record<string, string> = {};
+    let confirmationMessage = "Thank you for signing up to receive DAV membership and veteran resource information via text. Msg & data rates may apply. Reply STOP to opt out."; // Default message
     try {
       const schemaUrl = `https://${subdomain}.prompt.io/rest/1.0/data/schema/6`;
       const schemaController = new AbortController();
@@ -111,6 +113,12 @@ export async function POST(request: NextRequest) {
         const form = forms[submission.formId - 1]; // formId is 1-indexed
         
         if (form) {
+          // Extract confirmation message if available
+          if (form.confirmationMessage && form.confirmationMessage.trim()) {
+            confirmationMessage = form.confirmationMessage.trim();
+            console.log('Using custom confirmation message from form:', confirmationMessage);
+          }
+          
           // Build field ID to label mapping
           Object.keys(form).forEach((key) => {
             if (key.startsWith('field_')) {
@@ -617,7 +625,7 @@ export async function POST(request: NextRequest) {
         
         const sendMessageUrl = `https://${subdomain}.prompt.io/rest/1.0/messages/send_to_customer`;
         const messagePayload = {
-          message: "Thank you for signing up to receive DAV membership and veteran resource information via text. Msg & data rates may apply. Reply STOP to opt out.",
+          message: confirmationMessage,
           orgChannelApiId: "ps_1_859_2155511",
           customerChannelKey: phoneNumber,
           ignoreDeliveryRestrictions: true,

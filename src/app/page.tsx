@@ -14,6 +14,7 @@ interface Form {
   description: string;
   fields: FormField[];
   callbackUrl?: string;
+  confirmationMessage?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -50,7 +51,8 @@ function FormBuilderContent() {
     // Build the payload according to your requirements
     const payload: SchemaPayload = {
       formTitle: form.title || '',
-      formDescription: form.description || ''
+      formDescription: form.description || '',
+      confirmationMessage: form.confirmationMessage || ''
     };
 
     // Add each form field as a property, EXCLUDING automatic fields

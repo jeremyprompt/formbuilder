@@ -9,6 +9,7 @@ interface Form {
   description: string;
   fields: FormField[];
   callbackUrl?: string;
+  confirmationMessage?: string;
   createdAt: string;
   updatedAt?: string;
 }
@@ -43,6 +44,7 @@ export default function FormBuilder({ form, onSave, onCancel }: FormBuilderProps
   const [title, setTitle] = useState(form.title);
   const [description, setDescription] = useState(form.description);
   const [callbackUrl, setCallbackUrl] = useState(form.callbackUrl || '');
+  const [confirmationMessage, setConfirmationMessage] = useState(form.confirmationMessage || '');
   
   // Separate automatic fields from additional fields
   const [additionalFields, setAdditionalFields] = useState<FormField[]>(() => {
@@ -109,6 +111,7 @@ export default function FormBuilder({ form, onSave, onCancel }: FormBuilderProps
       title: title.trim(),
       description: description.trim(),
       callbackUrl: callbackUrl.trim(),
+      confirmationMessage: confirmationMessage.trim(),
       fields: allFields,
       updatedAt: new Date().toISOString()
     };
@@ -167,6 +170,22 @@ export default function FormBuilder({ form, onSave, onCancel }: FormBuilderProps
                 rows={3}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical text-gray-900"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Confirmation Message
+              </label>
+              <textarea
+                value={confirmationMessage}
+                onChange={(e) => setConfirmationMessage(e.target.value)}
+                placeholder="This will be the confirmation message text your clients will receive when they submit their form."
+                rows={4}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-vertical text-gray-900"
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                This will be the confirmation message text your clients will receive when they submit their form.
+              </p>
             </div>
 
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">

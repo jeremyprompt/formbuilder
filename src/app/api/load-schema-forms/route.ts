@@ -13,6 +13,7 @@ interface SchemaForm {
   field_9?: string;
   formTitle: string;
   formDescription: string;
+  confirmationMessage?: string;
   [key: string]: string | undefined;
 }
 
@@ -27,6 +28,7 @@ interface ParsedForm {
   id: number;
   title: string;
   description: string;
+  confirmationMessage?: string;
   fields: ParsedField[];
   createdAt: string;
 }
@@ -163,6 +165,7 @@ export async function GET() {
         id: index + 1, // Generate ID
         title: form.formTitle || 'Untitled Form',
         description: form.formDescription || '',
+        confirmationMessage: form.confirmationMessage || '',
         fields: allFields,
         createdAt: new Date().toISOString()
       };

@@ -10,6 +10,7 @@ interface Form {
   description: string;
   fields: FormField[];
   callbackUrl?: string;
+  confirmationMessage?: string;
   createdAt: string;
   updatedAt?: string;
 }
